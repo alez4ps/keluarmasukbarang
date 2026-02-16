@@ -922,129 +922,93 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
     </div>
 </div>
 
-<!-- MODAL REGISTRASI BARANG MASUK -->
+<!-- MODAL REGISTRASI LAPTOP -->
 <div class="modal fade" id="laptopModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="post" action="/registrasi/store">
+            <form method="post" action="/laptop/store">
                 <?= csrf_field() ?>
                 <div class="modal-header">
-                    <h5 class="modal-title">Registrasi Barang Masuk</h5>
+                    <h5 class="modal-title">
+                        <i class="bi bi-laptop"></i> 
+                        Registrasi Laptop Baru
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
-                        <input type="hidden" name="tanggal" value="<?= esc($tanggal ?? date('Y-m-d H:i:s')) ?>">
-
                         <div class="col-md-6">
-                            <label class="form-label">No Agenda</label>
-                            <input type="text" name="no_agenda" value="<?= esc($noAgenda ?? 'M-0000') ?>" 
-                                   class="form-control" readonly>
+                            <label class="form-label">Nama Pengguna <span class="text-danger">*</span></label>
+                            <input type="text" name="nama_pengguna" class="form-control" 
+                                   placeholder="Masukkan nama pengguna" required>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Tipe Barang</label>
-                            <select name="tipe" class="form-select" required>
-                                <option value="">-- Pilih --</option>
-                                <option value="Komersil">Komersil</option>
-                                <option value="Militer">Militer</option>
-                                <option value="Jasa">Jasa</option>
-                                <option value="Non_core">Non Core</option>
-                                <option value="Perbaikan">Perbaikan</option>
-                                <option value="Petty_cash">Petty Cash</option>
+                            <label class="form-label">Nomor ID Card <span class="text-danger">*</span></label>
+                            <input type="text" name="nomor_id_card" class="form-control" 
+                                   placeholder="Contoh: PEG-2024-001" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Instansi/Divisi <span class="text-danger">*</span></label>
+                            <input type="text" name="instansi_divisi" class="form-control" 
+                                   placeholder="Nama Sekolah/Divisi" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Merek Laptop <span class="text-danger">*</span></label>
+                            <select name="merek" class="form-select" required>
+                                <option value="">-- Pilih Merek --</option>
+                                <option value="Dell">Dell</option>
+                                <option value="HP">HP</option>
+                                <option value="Lenovo">Lenovo</option>
+                                <option value="Asus">Asus</option>
+                                <option value="Acer">Acer</option>
+                                <option value="Apple">Apple</option>
+                                <option value="Toshiba">Toshiba</option>
+                                <option value="Fujitsu">Fujitsu</option>
+                                <option value="Lainnya">Lainnya</option>
                             </select>
                         </div>
 
-                        <div class="col-md-12">
-                            <label class="form-label">No SPB</label>
-                            <input type="text" name="no_spb" class="form-control" required>
-                        </div>
-
-                        <div class="col-md-12">
-                            <label class="form-label">Nama Barang</label>
-                            <input type="text" name="nama_barang" class="form-control" required>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipe Laptop</label>
+                            <input type="text" name="tipe_laptop" class="form-control" 
+                                   placeholder="Contoh: Latitude 5420, ThinkPad X1">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Jumlah Total</label>
-                            <input type="number" name="jumlah" class="form-control jumlah-total" 
-                                   id="totalJumlahMasuk" value="1" min="1" required>
+                            <label class="form-label">Nomor Seri <span class="text-danger">*</span></label>
+                            <input type="text" name="nomor_seri" class="form-control" 
+                                   placeholder="Nomor seri laptop" required>
+                            <small class="text-muted">Nomor seri harus sesuai</small>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Satuan</label>
-                            <input type="text" name="satuan" class="form-control" required>
+                            <label class="form-label">Berlaku Sampai Dengan <span class="text-danger">*</span></label>
+                            <input type="date" name="berlaku_sampai" class="form-control" 
+                                   min="<?= date('Y-m-d') ?>" required>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Asal Barang</label>
-                            <input type="text" name="asal" class="form-control" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Tujuan Barang</label>
-                            <input type="text" name="tujuan" class="form-control" required>
-                        </div>
-
-                        <!-- MODE SECTION -->
-                        <div class="col-12 mt-3">
-                            <h6 class="border-bottom pb-2">Mode Pengiriman</h6>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="partialCheckMasuk" name="is_partial">
-                                <label class="form-check-label" for="partialCheckMasuk">
-                                    <strong>Partial (Bertahap)</strong>
-                                </label>
-                                <div class="form-text">Barang masuk sebagian demi sebagian</div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="kembaliCheckMasuk" name="akan_kembali" value="Ya">
-                                <label class="form-check-label" for="kembaliCheckMasuk">
-                                    <strong>Barang Akan Kembali</strong>
-                                </label>
-                                <div class="form-text">Barang akan dikembalikan setelah digunakan</div>
-                            </div>
-                        </div>
-
-                        <!-- PARTIAL FIELDS -->
-                        <div class="col-md-6 d-none" id="jumlahWrapperMasuk">
-                            <label class="form-label">Jumlah Masuk Pertama</label>
-                            <input type="number" name="jumlah_masuk" class="form-control jumlah-masuk" 
-                                   id="jumlahInputMasuk" min="1" value="1">
-                            <div class="form-text">Jumlah yang masuk pertama kali</div>
-                        </div>
-
-                        <div class="col-md-6 d-none" id="sisaWrapperMasuk">
-                            <label class="form-label">Sisa yang Belum Masuk</label>
-                            <input type="text" class="form-control" id="sisaInputMasuk" readonly>
-                            <div class="form-text">Akan otomatis terhitung</div>
-                        </div>
-
-                        <!-- ESTIMASI KEMBALI -->
-                        <div class="col-md-6 d-none" id="estimasiWrapperMasuk">
-                            <label class="form-label">Estimasi Tanggal Kembali</label>
-                            <input type="date" name="estimasi_kembali" class="form-control" 
-                                   id="estimasiDateMasuk">
-                            <div class="form-text">Perkiraan tanggal barang akan kembali</div>
+                        <div class="col-12">
+                            <label class="form-label">Spesifikasi Lain (RAM, Processor, Storage, dll)</label>
+                            <textarea name="spesifikasi_lain" class="form-control" rows="3"
+                                      placeholder="Contoh: Intel Core i7, RAM 16GB, SSD 512GB, Windows 11 Pro"></textarea>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success">Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Simpan Data Laptop
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
 
 <!-- MODAL REGISTRASI BARANG KELUAR -->
 <div class="modal fade" id="keluarModal" tabindex="-1">
