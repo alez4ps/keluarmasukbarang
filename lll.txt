@@ -1,0 +1,197 @@
+<?= $this->extend('layouts/main') ?>
+
+<?= $this->section('title') ?>Dashboard<?= $this->endSection() ?>
+
+<?= $this->section('content') ?>
+<?
+$sql = "SELECT 
+  (SELECT COUNT(*) FROM users) AS total_user";
+
+$result = mysqli_query($sql);
+$totals = mysqli_fetch_assoc($result);
+
+$total_user = $totals['total_user'];
+
+?>
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard Admin</h1>
+    </div>
+
+    <!-- First Row -->
+    <div class="row">
+
+        <!-- Total Pembeli -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 hover-shadow">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pembeli</div>
+                        <div class="h5 font-weight-bold text-gray-800"><?= $total_user ?></div>
+                    </div>
+                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Mobil -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 hover-shadow">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Mobil</div>
+                        <div class="h5 font-weight-bold text-gray-800"><?= $total_user ?></div>
+                    </div>
+                    <i class="fas fa-car fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kredit Berjalan -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2 hover-shadow">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Kredit Berjalan</div>
+                        <div class="h5 font-weight-bold text-gray-800"><?= $total_user ?></div>
+                    </div>
+                    <i class="fas fa-file-invoice-dollar fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Second Row -->
+    <div class="row">
+
+        <!-- Pembayaran Cicilan -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2 hover-shadow">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Pembayaran Cicilan</div>
+                        <div class="h5 font-weight-bold text-gray-800"><?= $total_user ?></div>
+                    </div>
+                    <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Petugas -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-left-info shadow h-100 py-2 hover-shadow">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Petugas</div>
+                        <div class="h5 font-weight-bold text-gray-800"><?= $total_user ?></div>
+                    </div>
+                    <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Paket -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-left-secondary shadow h-100 py-2 hover-shadow">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Total Paket</div>
+                        <div class="h5 font-weight-bold text-gray-800"><?= $total_user ?></div>
+                    </div>
+                    <i class="fas fa-box fa-2x text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<!-- Grafik Modern -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Grafik Statistik Data</h6>
+            </div>
+            <div class="card-body">
+                <div id="barChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Komposisi Data</h6>
+            </div>
+            <div class="card-body">
+                <div id="pieChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-shadow:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+// ====== BAR CHART ======
+var barOptions = {
+    chart: {
+        type: 'bar',
+        height: 300,
+        toolbar: { show: false },
+    },
+    series: [{
+        name: 'Jumlah Data',
+        data: [
+            <?= $total_user ?>,
+            <?= $total_user ?>,
+            <?= $total_user ?>,
+            <?= $total_user ?>,
+            <?= $total_user ?>,
+            <?= $total_user ?>
+        ]
+    }],
+    colors: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'],
+    xaxis: {
+        categories: ['Pembeli', 'Mobil', 'Kredit', 'Cicilan', 'Petugas', 'Paket Kredit'],
+        labels: { style: { fontSize: '13px' } }
+    },
+    dataLabels: { enabled: true }
+};
+var barChart = new ApexCharts(document.querySelector("#barChart"), barOptions);
+barChart.render();
+
+// ====== PIE CHART ======
+var pieOptions = {
+    chart: {
+        type: 'pie',
+        height: 300,
+    },
+    series: [
+        <?= $total_user ?>,
+        <?= $total_user ?>,
+        <?= $total_user ?>,
+        <?= $total_user ?>,
+        <?= $total_user ?>,
+        <?= $total_user ?>
+    ],
+    labels: ['Pembeli', 'Mobil', 'Kredit', 'Cicilan', 'Petugas', 'Paket Kredit'],
+    colors: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'],
+};
+var pieChart = new ApexCharts(document.querySelector("#pieChart"), pieOptions);
+pieChart.render();
+</script>
+
+<?= $this->endSection() ?>

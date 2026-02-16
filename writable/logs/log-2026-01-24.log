@@ -1,0 +1,116 @@
+DEBUG - 2026-01-24 07:35:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-01-24 07:36:18 --> mysqli_sql_exception: MySQL server has gone away in C:\xampp\htdocs\codeigniter4-1\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\codeigniter4-1\system\Database\MySQLi\Connection.php(327): mysqli->query()
+#1 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute()
+#2 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery()
+#3 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query()
+#4 C:\xampp\htdocs\codeigniter4-1\system\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\codeigniter4-1\system\BaseModel.php(715): CodeIgniter\Model->doFirst()
+#6 C:\xampp\htdocs\codeigniter4-1\app\Controllers\Auth.php(20): CodeIgniter\BaseModel->first()
+#7 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(933): App\Controllers\Auth->process()
+#8 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+#9 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+#10 C:\xampp\htdocs\codeigniter4-1\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#11 C:\xampp\htdocs\codeigniter4-1\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+#12 C:\xampp\htdocs\codeigniter4-1\public\index.php(59): CodeIgniter\Boot::bootWeb()
+#13 C:\xampp\htdocs\codeigniter4-1\system\rewrite.php(44): require_once('...')
+#14 {main}
+CRITICAL - 2026-01-24 07:36:19 --> CodeIgniter\Database\Exceptions\DatabaseException: MySQL server has gone away
+[Method: POST, Route: login]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query()
+ 2 SYSTEMPATH\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(715): CodeIgniter\Model->doFirst()
+ 4 APPPATH\Controllers\Auth.php(20): CodeIgniter\BaseModel->first()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Auth->process()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb()
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\codeigniter4-1\\public\\index.php')
+CRITICAL - 2026-01-24 07:36:19 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: MySQL server has gone away
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute()
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery()
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query()
+ 4 SYSTEMPATH\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(715): CodeIgniter\Model->doFirst()
+ 6 APPPATH\Controllers\Auth.php(20): CodeIgniter\BaseModel->first()
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Auth->process()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb()
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\codeigniter4-1\\public\\index.php')
+CRITICAL - 2026-01-24 07:36:19 --> [Caused by] mysqli_sql_exception: MySQL server has gone away
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query()
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute()
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery()
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query()
+ 5 SYSTEMPATH\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(715): CodeIgniter\Model->doFirst()
+ 7 APPPATH\Controllers\Auth.php(20): CodeIgniter\BaseModel->first()
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Auth->process()
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb()
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\codeigniter4-1\\public\\index.php')
+ERROR - 2026-01-24 07:36:24 --> Error connecting to the database: mysqli_sql_exception: No connection could be made because the target machine actively refused it in C:\xampp\htdocs\codeigniter4-1\system\Database\MySQLi\Connection.php:201
+Stack trace:
+#0 C:\xampp\htdocs\codeigniter4-1\system\Database\MySQLi\Connection.php(201): mysqli->real_connect()
+#1 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect()
+#2 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+#3 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query()
+#4 C:\xampp\htdocs\codeigniter4-1\system\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\codeigniter4-1\system\BaseModel.php(715): CodeIgniter\Model->doFirst()
+#6 C:\xampp\htdocs\codeigniter4-1\app\Controllers\Auth.php(20): CodeIgniter\BaseModel->first()
+#7 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(933): App\Controllers\Auth->process()
+#8 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+#9 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+#10 C:\xampp\htdocs\codeigniter4-1\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#11 C:\xampp\htdocs\codeigniter4-1\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+#12 C:\xampp\htdocs\codeigniter4-1\public\index.php(59): CodeIgniter\Boot::bootWeb()
+#13 C:\xampp\htdocs\codeigniter4-1\system\rewrite.php(44): require_once('...')
+#14 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: No connection could be made because the target machine actively refused it in C:\xampp\htdocs\codeigniter4-1\system\Database\MySQLi\Connection.php:246
+Stack trace:
+#0 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseConnection.php(419): CodeIgniter\Database\MySQLi\Connection->connect()
+#1 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+#2 C:\xampp\htdocs\codeigniter4-1\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query()
+#3 C:\xampp\htdocs\codeigniter4-1\system\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+#4 C:\xampp\htdocs\codeigniter4-1\system\BaseModel.php(715): CodeIgniter\Model->doFirst()
+#5 C:\xampp\htdocs\codeigniter4-1\app\Controllers\Auth.php(20): CodeIgniter\BaseModel->first()
+#6 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(933): App\Controllers\Auth->process()
+#7 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+#8 C:\xampp\htdocs\codeigniter4-1\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+#9 C:\xampp\htdocs\codeigniter4-1\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xampp\htdocs\codeigniter4-1\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+#11 C:\xampp\htdocs\codeigniter4-1\public\index.php(59): CodeIgniter\Boot::bootWeb()
+#12 C:\xampp\htdocs\codeigniter4-1\system\rewrite.php(44): require_once('...')
+#13 {main}
+CRITICAL - 2026-01-24 07:36:24 --> CodeIgniter\Database\Exceptions\DatabaseException: Unable to connect to the database.
+Main connection [MySQLi]: No connection could be made because the target machine actively refused it
+[Method: POST, Route: login]
+in SYSTEMPATH\Database\BaseConnection.php on line 465.
+ 1 SYSTEMPATH\Database\BaseConnection.php(614): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query()
+ 3 SYSTEMPATH\Model.php(330): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH\BaseModel.php(715): CodeIgniter\Model->doFirst()
+ 5 APPPATH\Controllers\Auth.php(20): CodeIgniter\BaseModel->first()
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Auth->process()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter()
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb()
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\codeigniter4-1\\public\\index.php')
+DEBUG - 2026-01-24 07:36:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-01-24 07:36:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-01-24 07:36:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
