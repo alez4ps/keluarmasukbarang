@@ -51,3 +51,12 @@ $routes->get('registrasi/kembaliLangsung/(:num)', 'Barang::kembaliLangsung/$1');
 
 $routes->get('logs', 'BarangLog::index');
 $routes->get('logs/export', 'BarangLog::export');
+
+$routes->get('/barang/laptop', 'Barang::laptop');
+$routes->post('/barang/laptop/store', 'Barang::storeLaptop');
+$routes->get('/barang/laptop/edit/(:num)', 'Barang::editLaptop/$1');
+$routes->post('/barang/laptop/update/(:num)', 'Barang::updateLaptop/$1');
+$routes->get('/barang/laptop/delete/(:num)', 'Barang::deleteLaptop/$1');
+$routes->post('/barang/laptop/change-status/(:num)', 'Barang::changeLaptopStatus/$1');
+$routes->get('/barang/laptop/detail/(:num)', 'Barang::detailLaptop/$1');
+$routes->get('/barang/laptop/export', 'Barang::exportLaptop');

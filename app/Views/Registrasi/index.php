@@ -270,18 +270,18 @@
                                    class="form-control" readonly>
                         </div>
                         
-                        <div class="col-md-6">
-                            <label class="form-label">Tipe</label>
-                            <select name="tipe" class="form-select" required>
-                                <option value="">-- Pilih --</option>
-                                <option value="Komersil" <?= $barang['tipe'] == 'Komersil' ? 'selected' : '' ?>>Komersil</option>
-                                <option value="Militer" <?= $barang['tipe'] == 'Militer' ? 'selected' : '' ?>>Militer</option>
-                                <option value="Jasa" <?= $barang['tipe'] == 'Jasa' ? 'selected' : '' ?>>Jasa</option>
-                                <option value="Non_core" <?= $barang['tipe'] == 'Non_core' ? 'selected' : '' ?>>Non Core</option>
-                                <option value="Perbaikan" <?= $barang['tipe'] == 'Perbaikan' ? 'selected' : '' ?>>Perbaikan</option>
-                                <option value="Petty_cash" <?= $barang['tipe'] == 'Petty_cash' ? 'selected' : '' ?>>Petty Cash</option>
-                            </select>
-                        </div>
+<div class="col-md-6">
+    <label class="form-label">Tipe</label>
+    <select name="tipe" class="form-select select2" required>
+        <option value="">-- Pilih --</option>
+        <option value="Komersil" <?= $barang['tipe'] == 'Komersil' ? 'selected' : '' ?>>Komersil</option>
+        <option value="Militer" <?= $barang['tipe'] == 'Militer' ? 'selected' : '' ?>>Militer</option>
+        <option value="Jasa" <?= $barang['tipe'] == 'Jasa' ? 'selected' : '' ?>>Jasa</option>
+        <option value="Non_core" <?= $barang['tipe'] == 'Non_core' ? 'selected' : '' ?>>Non Core</option>
+        <option value="Perbaikan" <?= $barang['tipe'] == 'Perbaikan' ? 'selected' : '' ?>>Perbaikan</option>
+        <option value="Petty_cash" <?= $barang['tipe'] == 'Petty_cash' ? 'selected' : '' ?>>Petty Cash</option>
+    </select>
+</div>
 
                         <div class="col-md-12">
                             <label class="form-label">No SPB</label>
@@ -819,18 +819,18 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                                    class="form-control" readonly>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Tipe Barang</label>
-                            <select name="tipe" class="form-select" required>
-                                <option value="">-- Pilih --</option>
-                                <option value="Komersil">Komersil</option>
-                                <option value="Militer">Militer</option>
-                                <option value="Jasa">Jasa</option>
-                                <option value="Non_core">Non Core</option>
-                                <option value="Perbaikan">Perbaikan</option>
-                                <option value="Petty_cash">Petty Cash</option>
-                            </select>
-                        </div>
+<div class="col-md-6">
+    <label class="form-label">Tipe Barang</label>
+    <select name="tipe" class="form-select select2" required>
+        <option value="">-- Pilih --</option>
+        <option value="Komersil">Komersil</option>
+        <option value="Militer">Militer</option>
+        <option value="Jasa">Jasa</option>
+        <option value="Non_core">Non Core</option>
+        <option value="Perbaikan">Perbaikan</option>
+        <option value="Petty_cash">Petty Cash</option>
+    </select>
+</div>
 
                         <div class="col-md-12">
                             <label class="form-label">No SPB</label>
@@ -858,10 +858,25 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                             <input type="text" name="asal" class="form-control" required>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Tujuan Barang</label>
-                            <input type="text" name="tujuan" class="form-control" required>
-                        </div>
+<div class="col-md-6">
+    <label class="form-label">Tujuan Barang <span class="text-danger">*</span></label>
+    <select name="tujuan" class="form-select select2" required>
+        <option value="">-- Pilih Divisi --</option>
+        <optgroup label="Divisi Produksi">
+            <option value="Divisi Senjata">Divisi Senjata</option>
+            <option value="Divisi Kendaraan Khusus">Divisi Kendaraan Khusus</option>
+            <option value="Divisi Munisi">Divisi Munisi</option>
+            <option value="Divisi Tempa & Cor">Divisi Tempa & Cor</option>
+            <option value="Divisi Produk Industri & Jasa">Divisi Produk Industri & Jasa</option>
+        </optgroup>
+        <optgroup label="Divisi Pendukung">
+            <option value="Divisi Litbang (R&D)">Divisi Litbang (R&D)</option>
+            <option value="Divisi Quality Assurance (QA)">Divisi Quality Assurance (QA)</option>
+            <option value="Divisi Maintenance, Repair & Overhaul (MRO)">Divisi Maintenance, Repair & Overhaul (MRO)</option>
+            <option value="Divisi SDM & Pengembangan Organisasi">Divisi SDM & Pengembangan Organisasi</option>
+        </optgroup>
+    </select>
+</div>
 
                         <!-- MODE SECTION -->
                         <div class="col-12 mt-3">
@@ -926,7 +941,7 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
 <div class="modal fade" id="laptopModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="post" action="/laptop/store">
+            <form method="post" action="barang/laptop/store">
                 <?= csrf_field() ?>
                 <div class="modal-header">
                     <h5 class="modal-title">
@@ -955,21 +970,21 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                                    placeholder="Nama Sekolah/Divisi" required>
                         </div>
                         
-                        <div class="col-md-6">
-                            <label class="form-label">Merek Laptop <span class="text-danger">*</span></label>
-                            <select name="merek" class="form-select" required>
-                                <option value="">-- Pilih Merek --</option>
-                                <option value="Dell">Dell</option>
-                                <option value="HP">HP</option>
-                                <option value="Lenovo">Lenovo</option>
-                                <option value="Asus">Asus</option>
-                                <option value="Acer">Acer</option>
-                                <option value="Apple">Apple</option>
-                                <option value="Toshiba">Toshiba</option>
-                                <option value="Fujitsu">Fujitsu</option>
-                                <option value="Lainnya">Lainnya</option>
-                            </select>
-                        </div>
+<div class="col-md-6">
+    <label class="form-label">Merek Laptop <span class="text-danger">*</span></label>
+    <select name="merek" class="form-select select2" required>
+        <option value="">-- Pilih Merek --</option>
+        <option value="Dell">Dell</option>
+        <option value="HP">HP</option>
+        <option value="Lenovo">Lenovo</option>
+        <option value="Asus">Asus</option>
+        <option value="Acer">Acer</option>
+        <option value="Apple">Apple</option>
+        <option value="Toshiba">Toshiba</option>
+        <option value="Fujitsu">Fujitsu</option>
+        <option value="Lainnya">Lainnya</option>
+    </select>
+</div>
 
                         <div class="col-md-6">
                             <label class="form-label">Tipe Laptop</label>
@@ -1017,41 +1032,29 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
             <form method="post" action="/registrasi/store">
                 <?= csrf_field() ?>
                 <div class="modal-header">
-                    <h5 class="modal-title">Registrasi Laptop</h5>
+                    <h5 class="modal-title">Registrasi Barang Keluar</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">No Registrasi</label>
+                            <label class="form-label">No Agenda</label>
                             <input type="text" name="no_registrasi" value="<?= esc($noAgendaKeluar ?? 'K-0000') ?>" 
                                    class="form-control" readonly>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Nama</label>
-                            <input type="text" name="no_registrasi" value="<?= esc($noAgendaKeluar ?? 'K-0000') ?>" 
-                                   class="form-control" readonly>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">No Ser</label>
-                            <input type="text" name="no_agenda" value="<?= esc($noAgendaKeluar ?? 'K-0000') ?>" 
-                                   class="form-control" readonly>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Tipe Barang</label>
-                            <select name="tipe" class="form-select" required>
-                                <option value="">-- Pilih --</option>
-                                <option value="Komersil">Komersil</option>
-                                <option value="Militer">Militer</option>
-                                <option value="Jasa">Jasa</option>
-                                <option value="Non_core">Non Core</option>
-                                <option value="Perbaikan">Perbaikan</option>
-                                <option value="Petty_cash">Petty Cash</option>
-                            </select>
-                        </div>
+<div class="col-md-6">
+    <label class="form-label">Tipe Barang</label>
+    <select name="tipe" class="form-select select2" required>
+        <option value="">-- Pilih --</option>
+        <option value="Komersil">Komersil</option>
+        <option value="Militer">Militer</option>
+        <option value="Jasa">Jasa</option>
+        <option value="Non_core">Non Core</option>
+        <option value="Perbaikan">Perbaikan</option>
+        <option value="Petty_cash">Petty Cash</option>
+    </select>
+</div>
 
                         <div class="col-md-12">
                             <label class="form-label">No SPB</label>
@@ -1073,11 +1076,10 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                             <label class="form-label">Satuan</label>
                             <input type="text" name="satuan" class="form-control" required>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Asal (Perusahaan)</label>
-                            <input type="text" name="asal" class="form-control" required>
-                        </div>
+<div class="col-md-6">
+    <label class="form-label">Asal (Perusahaan)</label>
+    <input type="text" name="asal" class="form-control" value="PT PINDAD" readonly>
+</div>
 
                         <div class="col-md-6">
                             <label class="form-label">Tujuan</label>
@@ -1317,5 +1319,172 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+<!-- Select2 Initialization Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi Select2 untuk semua dropdown
+    initSelect2();
+    
+    // Re-inisialisasi Select2 ketika modal dibuka
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('shown.bs.modal', function() {
+            initSelect2InModal(this);
+        });
+    });
 
+    function initSelect2() {
+        // Select2 untuk dropdown dengan class .select2
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih --',
+            allowClear: true
+        });
+
+        // Select2 untuk dropdown dengan class .select2-tags (untuk input tags)
+        $('.select2-tags').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            tags: true,
+            placeholder: 'Pilih atau ketik baru',
+            allowClear: true
+        });
+
+        // Select2 untuk dropdown dengan pencarian dinamis
+        $('.select2-ajax').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Ketik untuk mencari...',
+            minimumInputLength: 2,
+            allowClear: true,
+            ajax: {
+                url: function(params) {
+                    // URL akan ditentukan oleh data-url attribute
+                    return $(this).data('url');
+                },
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        q: params.term,
+                        page: params.page || 1
+                    };
+                },
+                processResults: function(data, params) {
+                    return {
+                        results: data.items,
+                        pagination: {
+                            more: data.more
+                        }
+                    };
+                },
+                cache: true
+            }
+        });
+    }
+
+    function initSelect2InModal(modal) {
+        // Destroy existing Select2 instances
+        $(modal).find('select.select2, select.select2-tags, select.select2-ajax').each(function() {
+            if ($(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2('destroy');
+            }
+        });
+
+        // Re-initialize
+        $(modal).find('.select2').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: '-- Pilih --',
+            allowClear: true,
+            dropdownParent: $(modal)
+        });
+
+        $(modal).find('.select2-tags').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            tags: true,
+            placeholder: 'Pilih atau ketik baru',
+            allowClear: true,
+            dropdownParent: $(modal)
+        });
+
+        $(modal).find('.select2-ajax').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Ketik untuk mencari...',
+            minimumInputLength: 2,
+            allowClear: true,
+            dropdownParent: $(modal),
+            ajax: {
+                url: function() {
+                    return $(this).data('url');
+                },
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        q: params.term,
+                        page: params.page || 1
+                    };
+                },
+                processResults: function(data, params) {
+                    return {
+                        results: data.items,
+                        pagination: {
+                            more: data.more
+                        }
+                    };
+                },
+                cache: true
+            }
+        });
+    }
+});
+</script>
+
+<!-- Optional: Style tambahan untuk Select2 -->
+<style>
+.select2-container--bootstrap-5 .select2-selection {
+    min-height: 38px;
+    border: 1px solid #dee2e6;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+    padding-left: 12px;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
+    padding: 2px 8px;
+}
+
+.select2-container--bootstrap-5 .select2-dropdown {
+    border-color: #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 2px;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+    color: #6c757d;
+    margin-right: 4px;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #dc3545;
+}
+</style>
 <?= $this->endSection() ?>
