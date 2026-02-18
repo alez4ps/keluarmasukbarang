@@ -204,7 +204,7 @@
 
     <li class="nav-item">
       <a class="nav-link" href="<?= base_url('registrasi') ?>">
-        <i class="bi bi-envelope"></i> <span>Data Registrasi Barang</span>
+        <i class="bi bi-envelope"></i> <span>Data Registrasi</span>
       </a>
     </li>
 

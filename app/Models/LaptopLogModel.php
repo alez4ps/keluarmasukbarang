@@ -4,12 +4,12 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class BarangLogModel extends Model
+class LaptopLogModel extends Model
 {
-    protected $table = 'barang_logs';
+    protected $table = 'laptop_logs';
     protected $primaryKey = 'id';
     protected $allowedFields = [
-        'barang_id', 'aksi', 'jumlah', 'sisa', 'keterangan', 'created_at'
+        'laptop_id', 'aksi', 'keterangan', 'created_at'
     ];
     protected $useTimestamps = false;
 }

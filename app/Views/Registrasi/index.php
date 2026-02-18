@@ -1,247 +1,350 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
-<h2 class="mb-3">Data Barang Keluar / Masuk</h2>
+<h2 class="mb-3">Data Barang Keluar / Masuk & Laptop</h2>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <!-- ACTION GROUP -->
-    <div class="d-flex gap-2">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrasiModal">
-            <i class="bi bi-box-arrow-down"></i> Barang Masuk
+<!-- TAB NAVIGATION -->
+<ul class="nav nav-tabs mb-3" id="mainTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="barang-tab" data-bs-toggle="tab" data-bs-target="#barang" type="button" role="tab" aria-controls="barang" aria-selected="true">
+            <i class="bi bi-box"></i> Barang
         </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="laptop-tab" data-bs-toggle="tab" data-bs-target="#laptop" type="button" role="tab" aria-controls="laptop" aria-selected="false">
+            <i class="bi bi-laptop"></i> Laptop
+        </button>
+    </li>
+</ul>
 
-        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#keluarModal">
-            <i class="bi bi-box-arrow-up"></i> Barang Keluar
-        </button>
-        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#laptopModal">
-            <i class="bi bi-box-arrow-down"></i> Laptop
-        </button>
+<!-- TAB CONTENT -->
+<div class="tab-content" id="mainTabContent">
+    <!-- TAB BARANG -->
+    <div class="tab-pane fade show active" id="barang" role="tabpanel" aria-labelledby="barang-tab">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <!-- ACTION GROUP -->
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrasiModal">
+                    <i class="bi bi-box-arrow-down"></i> Barang Masuk
+                </button>
+
+                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#keluarModal">
+                    <i class="bi bi-box-arrow-up"></i> Barang Keluar
+                </button>
+            </div>
+
+            <form action="/registrasi" method="get" class="d-flex gap-2">
+                <input type="text" name="keyword" class="form-control"
+                       placeholder="Cari barang / no agenda..."
+                       value="<?= esc($keyword ?? '') ?>">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- TABLE BARANG -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>No Agenda</th>
+                        <th>Dasar</th>
+                        <th>Barang</th>
+                        <th>Jumlah</th>
+                        <th>Asal → Tujuan</th>
+                        <th>Tipe</th>
+                        <th>Partial</th>
+                        <th>Status</th>
+                        <th>Keterangan</th>
+                        <th>Estimasi Kembali</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($barangs)): ?>
+                        <tr>
+                            <td colspan="12" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox"></i> Tidak ada data barang
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+
+                    <?php foreach ($barangs as $index => $barang): ?>
+                    <?php
+                    $isMasuk        = str_starts_with($barang['no_agenda'], 'M-');
+                    $isKeluar       = str_starts_with($barang['no_agenda'], 'K-');
+                    $isPartial      = $barang['is_partial'] === 'Ya';
+                    $statusSelesai  = $barang['status'] === 'Selesai';
+                    $keterangan     = $barang['keterangan'];
+                    $akanKembali    = ($barang['akan_kembali'] ?? 'Tidak') === 'Ya';
+
+                    $jumlah         = (int) $barang['jumlah'];
+                    $jumlahMasuk    = (int) $barang['jumlah_kembali'];
+                    $jumlahKeluar   = (int) $barang['jumlah_keluar'];
+
+                    $masukPenuh     = $jumlahMasuk >= $jumlah;
+                    $keluarPenuh    = $jumlahKeluar >= $jumlah;
+                    ?>
+                    <tr>
+                        <td><?= $index + 1 ?></td>
+                        <td><?= esc($barang['no_agenda']) ?></td>
+                        <td><?= esc($barang['no_spb']) ?></td>
+                        <td>
+                            <div class="fw-semibold"><?= esc($barang['nama_barang']) ?></div>
+                        </td>
+                        <td>
+                            <?= number_format($barang['jumlah']) ?>
+                            <small class="text-muted"><?= esc($barang['satuan']) ?></small>
+                            <div class="small text-muted">
+                                M:<?= $jumlahMasuk ?>/<?= $jumlah ?> | 
+                                K:<?= $jumlahKeluar ?>/<?= $jumlah ?>
+                            </div>
+                        </td>
+                        <td>
+                            <small><?= esc($barang['asal']) ?></small><br>
+                            <small class="text-muted">→ <?= esc($barang['tujuan']) ?></small>
+                        </td>
+                        <td><?= esc($barang['tipe']) ?></td>
+                        <td><?= esc($barang['is_partial']) ?></td>
+                        <td><?= esc($barang['status']) ?></td>
+                        <td>
+                            <span class="badge bg-<?= $keterangan === 'Belum Kembali' ? 'primary' : ($keterangan === 'Tidak Kembali' ? 'danger' : 'info') ?>">
+                                <?= $keterangan ?>
+                            </span>
+                        </td>
+                        <td><center><?= !empty($barang['estimasi_kembali']) ? esc($barang['estimasi_kembali']) : '----------' ?></center></td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1">
+                                <button class="btn btn-sm btn-warning"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#EditModal<?= $barang['id'] ?>">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+
+                                <?php if (!$statusSelesai): ?>
+
+                                    <?php if ($isMasuk): ?>
+                                        <?php if ($keterangan === 'Tidak Kembali'): ?>
+                                            <?php if ($isPartial && !$masukPenuh): ?>
+                                                <button class="btn btn-sm btn-primary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#MasukModal<?= $barang['id'] ?>">
+                                                    <i class="bi bi-box-arrow-in-down"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <?php if (!$masukPenuh): ?>
+                                                <?php if ($isPartial): ?>
+                                                    <button class="btn btn-sm btn-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#MasukModal<?= $barang['id'] ?>">
+                                                        <i class="bi bi-box-arrow-in-down"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <a href="/registrasi/masukLangsung/<?= $barang['id'] ?>"
+                                                       class="btn btn-sm btn-primary"
+                                                       onclick="return confirm('Masukkan semua barang?')">
+                                                        <i class="bi bi-box-arrow-in-down"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+
+                                            <?php if ($masukPenuh && !$keluarPenuh): ?>
+                                                <?php if ($isPartial): ?>
+                                                    <button class="btn btn-sm btn-success"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#KeluarModal<?= $barang['id'] ?>">
+                                                        <i class="bi bi-box-arrow-up"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <a href="/registrasi/prosesKeluarLangsung/<?= $barang['id'] ?>"
+                                                       class="btn btn-sm btn-success"
+                                                       onclick="return confirm('Keluarkan semua barang?')">
+                                                        <i class="bi bi-box-arrow-up"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+
+                                    <?php else: ?>
+                                        <?php if ($keterangan === 'Tidak Kembali'): ?>
+                                            <?php if ($isPartial && !$keluarPenuh): ?>
+                                                <button class="btn btn-sm btn-success"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#KeluarModal<?= $barang['id'] ?>">
+                                                    <i class="bi bi-box-arrow-up"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <?php if (!$keluarPenuh): ?>
+                                                <?php if ($isPartial): ?>
+                                                    <button class="btn btn-sm btn-success"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#KeluarModal<?= $barang['id'] ?>">
+                                                        <i class="bi bi-box-arrow-up"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <a href="/registrasi/prosesKeluarLangsung/<?= $barang['id'] ?>"
+                                                       class="btn btn-sm btn-success"
+                                                       onclick="return confirm('Keluarkan semua barang?')">
+                                                        <i class="bi bi-box-arrow-up"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+
+                                            <?php if ($keluarPenuh && !$masukPenuh): ?>
+                                                <?php if ($isPartial): ?>
+                                                    <button class="btn btn-sm btn-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#MasukModal<?= $barang['id'] ?>">
+                                                        <i class="bi bi-box-arrow-in-down"></i>
+                                                    </button>
+                                                <?php else: ?>
+                                                    <a href="/registrasi/masukLangsung/<?= $barang['id'] ?>"
+                                                       class="btn btn-sm btn-primary"
+                                                       onclick="return confirm('Masukkan semua barang?')">
+                                                        <i class="bi bi-box-arrow-in-down"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+
+                                    <?php if (
+                                        $keterangan === 'Tidak Kembali' ||
+                                        ($isMasuk && $masukPenuh && $keluarPenuh) ||
+                                        ($isKeluar && $keluarPenuh && $masukPenuh)
+                                    ): ?>
+                                        <a href="/registrasi/selesai/<?= $barang['id'] ?>"
+                                           class="btn btn-sm btn-dark"
+                                           onclick="return confirm('Tandai sebagai selesai?')">
+                                            <i class="bi bi-check2-circle"></i>
+                                        </a>
+                                    <?php endif; ?>
+
+                                <?php endif; ?>
+
+                                <button class="btn btn-sm btn-info"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#DetailModal<?= $barang['id'] ?>">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <form action="/registrasi" method="get" class="d-flex gap-2">
-        <input type="text" name="keyword" class="form-control"
-               placeholder="Cari barang / no agenda..."
-               value="<?= esc($keyword ?? '') ?>">
-        <button class="btn btn-outline-secondary" type="submit">
-            <i class="bi bi-search"></i>
-        </button>
-    </form>
-</div>
+    <!-- TAB LAPTOP -->
+    <div class="tab-pane fade" id="laptop" role="tabpanel" aria-labelledby="laptop-tab">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#laptopModal">
+                    <i class="bi bi-laptop"></i>Registrasi Laptop
+                </button>
+                <a href="/barang/laptop/export" class="btn btn-success ms-2">
+                    <i class="bi bi-file-earmark-excel"></i> Export CSV
+                </a>
+            </div>
 
-<!-- TABLE -->
+            <form action="/barang/laptop" method="get" class="d-flex gap-2">
+                <select name="status" class="form-select" style="width: 150px;">
+                    <option value="">Semua Status</option>
+                    <option value="Masih Berlaku" <?= ($status ?? '') == 'Masih Berlaku' ? 'selected' : '' ?>>Masih Berlaku</option>
+                    <option value="Tidak Berlaku" <?= ($status ?? '') == 'Tidak Berlaku' ? 'selected' : '' ?>>Tidak Berlaku</option>
+                </select>
+                <input type="text" name="keyword" class="form-control"
+                       placeholder="Cari pengguna / merek / seri..."
+                       value="<?= esc($keywordLaptop ?? '') ?>">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- TABLE LAPTOP -->
 <div class="table-responsive">
     <table class="table table-bordered table-hover table-striped">
         <thead class="table-light">
             <tr>
                 <th>#</th>
-                <th>No Agenda</th>
-                <th>Dasar</th>
-                <th>Barang</th>
-                <th>Jumlah</th>
-                <th>Asal → Tujuan</th>
+                <th>Nama Pengguna</th>
+                <th>ID Card</th>
+                <th>Instansi/Divisi</th>
+                <th>Merek</th>
                 <th>Tipe</th>
-                <th>Partial</th>
+                <th>Nomor Seri</th>
+                <th>Berlaku Sampai</th>
                 <th>Status</th>
-                <th>Keterangan</th>
-                <th>Estimasi Kembali</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-            <?php if (empty($barangs)): ?>
+            <?php if (empty($laptops)): ?>
                 <tr>
-                    <td colspan="12" class="text-center text-muted py-4">
-                        <i class="bi bi-inbox"></i> Tidak ada data barang
+                    <td colspan="10" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox"></i> Tidak ada data laptop
                     </td>
                 </tr>
             <?php endif; ?>
 
-            <?php foreach ($barangs as $index => $barang): ?>
-            <?php
-            $isMasuk        = str_starts_with($barang['no_agenda'], 'M-');
-            $isKeluar       = str_starts_with($barang['no_agenda'], 'K-');
-            $isPartial      = $barang['is_partial'] === 'Ya';
-            $statusSelesai  = $barang['status'] === 'Selesai';
-            $keterangan     = $barang['keterangan'];
-            $akanKembali    = ($barang['akan_kembali'] ?? 'Tidak') === 'Ya';
-
-            $jumlah         = (int) $barang['jumlah'];
-            $jumlahMasuk    = (int) $barang['jumlah_kembali'];
-            $jumlahKeluar   = (int) $barang['jumlah_keluar'];
-
-            $masukPenuh     = $jumlahMasuk >= $jumlah;
-            $keluarPenuh    = $jumlahKeluar >= $jumlah;
-            ?>
+            <?php foreach ($laptops as $index => $laptop): ?>
             <tr>
                 <td><?= $index + 1 ?></td>
-                <td><?= esc($barang['no_agenda']) ?></td>
-                <td><?= esc($barang['no_spb']) ?></td>
+                <td><?= esc($laptop['nama_pengguna']) ?></td>
+                <td><?= esc($laptop['nomor_id_card']) ?></td>
+                <td><?= esc($laptop['instansi_divisi']) ?></td>
+                <td><?= esc($laptop['merek']) ?></td>
+                <td><?= esc($laptop['tipe_laptop']) ?></td>
+                <td><?= esc($laptop['nomor_seri']) ?></td>
                 <td>
-                    <div class="fw-semibold"><?= esc($barang['nama_barang']) ?></div>
+                    <?= date('d/m/Y', strtotime($laptop['berlaku_sampai'])) ?>
+                    <?php if (strtotime($laptop['berlaku_sampai']) < time()): ?>
+                        <span class="badge bg-danger">Expired</span>
+                    <?php endif; ?>
                 </td>
                 <td>
-                    <?= number_format($barang['jumlah']) ?>
-                                        <small class="text-muted"><?= esc($barang['satuan']) ?></small>
-                    <div class="small text-muted">
-                        M:<?= $jumlahMasuk ?>/<?= $jumlah ?> | 
-                        K:<?= $jumlahKeluar ?>/<?= $jumlah ?>
-                    </div>
+                    <?php
+                    $badge = match($laptop['status']) {
+                        'Masih Berlaku' => 'success',
+                        'tidak Berlaku' => 'secondary',
+                        default => 'primary'
+                    };
+                    ?>
+                    <span class="badge bg-<?= $badge ?>"><?= $laptop['status'] ?></span>
                 </td>
                 <td>
-                    <small><?= esc($barang['asal']) ?></small><br>
-                    <small class="text-muted">→ <?= esc($barang['tujuan']) ?></small>
-                </td>
-                <td>
-                    <?= esc($barang['tipe']) ?>
-                </td>
-                <td>
-<?= esc($barang['is_partial']) ?>
-                </td>
-                <td>
-<?= esc($barang['status']) ?>
-                </td>
-                <td>
-                    <span class="badge bg-<?= $keterangan === 'Belum Kembali' ? 'primary' : ($keterangan === 'Tidak Kembali' ? 'danger' : 'info') ?>">
-                        <?= $keterangan ?>
-                </td>
-<td><center><?= !empty($barang['estimasi_kembali']) ? esc($barang['estimasi_kembali']) : '----------' ?></center></td>
-
-                <td>
-                    <div class="d-flex flex-wrap gap-1">
-                        <button class="btn btn-sm btn-warning"
-                                data-bs-toggle="modal"
-                                data-bs-target="#EditModal<?= $barang['id'] ?>">
+                    <div class="d-flex gap-1">
+                        <!-- Tombol Detail (Modal) -->
+                        <button class="btn btn-sm btn-info" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#detailLaptopModal<?= $laptop['id'] ?>">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        
+                        <!-- Tombol Print -->
+                        <button class="btn btn-sm btn-secondary" 
+                                onclick="printLaptop(<?= $laptop['id'] ?>)">
+                            <i class="bi bi-printer"></i>
+                        </button>
+                        
+                        <!-- Tombol Edit -->
+                        <button class="btn btn-sm btn-warning" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editLaptopModal<?= $laptop['id'] ?>">
                             <i class="bi bi-pencil-square"></i>
                         </button>
-
-                        <?php if (!$statusSelesai): ?>
-
-                            <?php if ($isMasuk): ?>
-
-                                <!-- ===== MASUK ===== -->
-
-                                <?php if ($keterangan === 'Tidak Kembali'): ?>
-
-                                    <?php if ($isPartial && !$masukPenuh): ?>
-                                        <button class="btn btn-sm btn-primary"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#MasukModal<?= $barang['id'] ?>">
-                                            <i class="bi bi-box-arrow-in-down"></i>
-                                        </button>
-                                    <?php endif; ?>
-
-                                <?php else: /* BELUM KEMBALI */ ?>
-
-                                    <!-- MASUK (HANYA JIKA BELUM PENUH) -->
-                                    <?php if (!$masukPenuh): ?>
-                                        <?php if ($isPartial): ?>
-                                            <button class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#MasukModal<?= $barang['id'] ?>">
-                                                <i class="bi bi-box-arrow-in-down"></i>
-                                            </button>
-                                        <?php else: ?>
-                                            <a href="/registrasi/masukLangsung/<?= $barang['id'] ?>"
-                                               class="btn btn-sm btn-primary"
-                                               onclick="return confirm('Masukkan semua barang?')">
-                                                <i class="bi bi-box-arrow-in-down"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-
-                                    <!-- KELUAR (MUNCUL SETELAH MASUK PENUH) -->
-                                    <?php if ($masukPenuh && !$keluarPenuh): ?>
-                                        <?php if ($isPartial): ?>
-                                            <button class="btn btn-sm btn-success"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#KeluarModal<?= $barang['id'] ?>">
-                                                <i class="bi bi-box-arrow-up"></i>
-                                            </button>
-                                        <?php else: ?>
-                                            <a href="/registrasi/prosesKeluarLangsung/<?= $barang['id'] ?>"
-                                               class="btn btn-sm btn-success"
-                                               onclick="return confirm('Keluarkan semua barang?')">
-                                                <i class="bi bi-box-arrow-up"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-
-                                <?php endif; ?>
-
-                            <?php else: ?>
-
-                                <!-- ===== KELUAR ===== -->
-
-                                <?php if ($keterangan === 'Tidak Kembali'): ?>
-
-                                    <?php if ($isPartial && !$keluarPenuh): ?>
-                                        <button class="btn btn-sm btn-success"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#KeluarModal<?= $barang['id'] ?>">
-                                            <i class="bi bi-box-arrow-up"></i>
-                                        </button>
-                                    <?php endif; ?>
-
-                                <?php else: /* BELUM KEMBALI */ ?>
-
-                                    <!-- KELUAR -->
-                                    <?php if (!$keluarPenuh): ?>
-                                        <?php if ($isPartial): ?>
-                                            <button class="btn btn-sm btn-success"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#KeluarModal<?= $barang['id'] ?>">
-                                                <i class="bi bi-box-arrow-up"></i>
-                                            </button>
-                                        <?php else: ?>
-                                            <a href="/registrasi/prosesKeluarLangsung/<?= $barang['id'] ?>"
-                                               class="btn btn-sm btn-success"
-                                               onclick="return confirm('Keluarkan semua barang?')">
-                                                <i class="bi bi-box-arrow-up"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-
-                                    <!-- MASUK (SETELAH KELUAR PENUH) -->
-                                    <?php if ($keluarPenuh && !$masukPenuh): ?>
-                                        <?php if ($isPartial): ?>
-                                            <button class="btn btn-sm btn-primary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#MasukModal<?= $barang['id'] ?>">
-                                                <i class="bi bi-box-arrow-in-down"></i>
-                                            </button>
-                                        <?php else: ?>
-                                            <a href="/registrasi/masukLangsung/<?= $barang['id'] ?>"
-                                               class="btn btn-sm btn-primary"
-                                               onclick="return confirm('Masukkan semua barang?')">
-                                                <i class="bi bi-box-arrow-in-down"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-
-                                <?php endif; ?>
-
-                            <?php endif; ?>
-
-                            <!-- ===== SELESAI ===== -->
-                            <?php if (
-                                $keterangan === 'Tidak Kembali' ||
-                                ($isMasuk && $masukPenuh && $keluarPenuh) ||
-                                ($isKeluar && $keluarPenuh && $masukPenuh)
-                            ): ?>
-                                <a href="/registrasi/selesai/<?= $barang['id'] ?>"
-                                   class="btn btn-sm btn-dark"
-                                   onclick="return confirm('Tandai sebagai selesai?')">
-                                    <i class="bi bi-check2-circle"></i>
-                                </a>
-                            <?php endif; ?>
-
-                        <?php endif; ?>
-
-                        <!-- DETAIL -->
-                        <button class="btn btn-sm btn-info"
-                                data-bs-toggle="modal"
-                                data-bs-target="#DetailModal<?= $barang['id'] ?>">
-                            <i class="bi bi-eye"></i>
+                        
+                        <!-- Tombol Hapus -->
+                        <button class="btn btn-sm btn-danger" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#deleteLaptopModal<?= $laptop['id'] ?>">
+                            <i class="bi bi-trash"></i>
                         </button>
                     </div>
                 </td>
@@ -250,9 +353,318 @@
         </tbody>
     </table>
 </div>
+    </div>
+</div>
+<!-- MODAL DETAIL LAPTOP UNTUK SETIAP LAPTOP -->
+<?php foreach ($laptops as $laptop): ?>
+<div class="modal fade" id="detailLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-laptop"></i> 
+                    Detail Laptop
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- INFORMASI LAPTOP -->
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header bg-light fw-semibold">
+                        <i class="bi bi-info-circle"></i> Informasi Laptop
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted">Nama Pengguna</small>
+                                <div class="fw-semibold"><?= esc($laptop['nama_pengguna']) ?></div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Nomor ID Card</small>
+                                <div class="fw-semibold"><?= esc($laptop['nomor_id_card']) ?></div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Instansi/Divisi</small>
+                                <div><?= esc($laptop['instansi_divisi']) ?></div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Merek & Tipe</small>
+                                <div><?= esc($laptop['merek']) ?> <?= esc($laptop['tipe_laptop']) ?></div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Nomor Seri</small>
+                                <div class="fw-semibold"><?= esc($laptop['nomor_seri']) ?></div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Berlaku Sampai</small>
+                                <div>
+                                    <?= date('d/m/Y', strtotime($laptop['berlaku_sampai'])) ?>
+                                    <?php if (strtotime($laptop['berlaku_sampai']) < time()): ?>
+                                        <span class="badge bg-danger ms-2">Expired</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted">Spesifikasi Lain</small>
+                                <div class="p-2 bg-light rounded">
+                                    <?= !empty($laptop['spesifikasi_lain']) ? nl2br(esc($laptop['spesifikasi_lain'])) : '<span class="text-muted">-</span>' ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-<!-- MODAL EDIT UNTUK SETIAP BARANG -->
+                <!-- STATUS LAPTOP -->
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header bg-light fw-semibold">
+                        <i class="bi bi-activity"></i> Status Laptop
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted d-block mb-2">Status Saat Ini</small>
+                                <?php
+                                $badge = match($laptop['status']) {
+                                    'Masih Berlaku' => 'success',
+                                    'Tidak Berlaku' => 'secondary',
+                                    default => 'primary'
+                                };
+                                ?>
+                                <span class="badge bg-<?= $badge ?> p-2" style="font-size: 1rem;">
+                                    <?= $laptop['status'] ?>
+                                </span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block mb-2">Keterangan</small>
+                                <div class="p-2 bg-light rounded">
+                                    <?= !empty($laptop['keterangan']) ? esc($laptop['keterangan']) : '<span class="text-muted">-</span>' ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x"></i> Tutup
+                </button>
+                <button type="button" class="btn btn-primary" onclick="printLaptop(<?= $laptop['id'] ?>)">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endforeach; ?>
+
+<!-- MODAL REGISTRASI LAPTOP -->
+<div class="modal fade" id="laptopModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="/barang/laptop/store">
+                <?= csrf_field() ?>
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-laptop"></i> 
+                        Registrasi Laptop Baru
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Pengguna <span class="text-danger">*</span></label>
+                            <input type="text" name="nama_pengguna" class="form-control" 
+                                   placeholder="Masukkan nama pengguna" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nomor ID Card <span class="text-danger">*</span></label>
+                            <input type="text" name="nomor_id_card" class="form-control" 
+                                   placeholder="Contoh: PEG-2024-001" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Instansi/Divisi <span class="text-danger">*</span></label>
+                            <input type="text" name="instansi_divisi" class="form-control" 
+                                   placeholder="Nama Sekolah/Divisi" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Merek Laptop <span class="text-danger">*</span></label>
+                            <select name="merek" class="form-select select2" required>
+                                <option value="">-- Pilih Merek --</option>
+                                <option value="Dell">Dell</option>
+                                <option value="HP">HP</option>
+                                <option value="Lenovo">Lenovo</option>
+                                <option value="Asus">Asus</option>
+                                <option value="Acer">Acer</option>
+                                <option value="Apple">Apple</option>
+                                <option value="Toshiba">Toshiba</option>
+                                <option value="Fujitsu">Fujitsu</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tipe Laptop</label>
+                            <input type="text" name="tipe_laptop" class="form-control" 
+                                   placeholder="Contoh: Latitude 5420, ThinkPad X1">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nomor Seri <span class="text-danger">*</span></label>
+                            <input type="text" name="nomor_seri" class="form-control" 
+                                   placeholder="Nomor seri laptop" required>
+                            <small class="text-muted">Nomor seri harus unik</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Berlaku Sampai Dengan <span class="text-danger">*</span></label>
+                            <input type="date" name="berlaku_sampai" class="form-control" 
+                                   min="<?= date('Y-m-d') ?>" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Spesifikasi Lain (RAM, Processor, Storage, dll)</label>
+                            <textarea name="spesifikasi_lain" class="form-control" rows="3"
+                                      placeholder="Contoh: Intel Core i7, RAM 16GB, SSD 512GB, Windows 11 Pro"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Simpan Data Laptop
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDIT LAPTOP UNTUK SETIAP LAPTOP -->
+<?php foreach ($laptops as $laptop): ?>
+<div class="modal fade" id="editLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="/barang/laptop/update/<?= $laptop['id'] ?>">
+                <?= csrf_field() ?>
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square"></i> 
+                        Edit Data Laptop
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nama Pengguna <span class="text-danger">*</span></label>
+                            <input type="text" name="nama_pengguna" class="form-control" 
+                                   value="<?= esc($laptop['nama_pengguna']) ?>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nomor ID Card <span class="text-danger">*</span></label>
+                            <input type="text" name="nomor_id_card" class="form-control" 
+                                   value="<?= esc($laptop['nomor_id_card']) ?>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Instansi/Divisi <span class="text-danger">*</span></label>
+                            <input type="text" name="instansi_divisi" class="form-control" 
+                                   value="<?= esc($laptop['instansi_divisi']) ?>" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Merek Laptop <span class="text-danger">*</span></label>
+                            <select name="merek" class="form-select" required>
+                                <option value="">-- Pilih Merek --</option>
+                                <?php
+                                $mereks = ['Dell', 'HP', 'Lenovo', 'Asus', 'Acer', 'Apple', 'Toshiba', 'Fujitsu', 'Lainnya'];
+                                foreach ($mereks as $m): ?>
+                                    <option value="<?= $m ?>" <?= $laptop['merek'] == $m ? 'selected' : '' ?>><?= $m ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tipe Laptop</label>
+                            <input type="text" name="tipe_laptop" class="form-control" 
+                                   value="<?= esc($laptop['tipe_laptop']) ?>">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nomor Seri <span class="text-danger">*</span></label>
+                            <input type="text" name="nomor_seri" class="form-control" 
+                                   value="<?= esc($laptop['nomor_seri']) ?>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Berlaku Sampai <span class="text-danger">*</span></label>
+                            <input type="date" name="berlaku_sampai" class="form-control" 
+                                   value="<?= $laptop['berlaku_sampai'] ?>" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="Masih Berlaku" <?= $laptop['status'] == 'Masih Berlaku' ? 'selected' : '' ?>>Masih Berlaku</option>
+                                <option value="Tidak Berlaku" <?= $laptop['status'] == 'Tidak Berlaku' ? 'selected' : '' ?>>Tidak Berlaku</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Spesifikasi Lain</label>
+                            <textarea name="spesifikasi_lain" class="form-control" rows="3"><?= esc($laptop['spesifikasi_lain']) ?></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Keterangan</label>
+                            <textarea name="keterangan" class="form-control" rows="2"><?= esc($laptop['keterangan']) ?></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DELETE LAPTOP -->
+<div class="modal fade" id="deleteLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Yakin ingin menghapus data laptop:</p>
+                <p><strong><?= esc($laptop['nama_pengguna']) ?></strong><br>
+                <small><?= esc($laptop['merek']) ?> <?= esc($laptop['tipe_laptop']) ?> (<?= esc($laptop['nomor_seri']) ?>)</small></p>
+                <p class="text-danger"><i class="bi bi-exclamation-triangle"></i> Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <a href="/barang/laptop/delete/<?= $laptop['id'] ?>" class="btn btn-danger" onclick="return confirm('Hapus permanen?')">
+                    <i class="bi bi-trash"></i> Ya, Hapus
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endforeach; ?>
+
+<!-- ===== SEMUA MODAL EXISTING UNTUK BARANG ===== -->
 <?php foreach ($barangs as $barang): ?>
+<!-- MODAL EDIT BARANG -->
 <div class="modal fade" id="EditModal<?= $barang['id'] ?>" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -266,77 +678,64 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">No Agenda</label>
-                            <input type="text" value="<?= esc($barang['no_agenda']) ?>" 
-                                   class="form-control" readonly>
+                            <input type="text" value="<?= esc($barang['no_agenda']) ?>" class="form-control" readonly>
                         </div>
                         
-<div class="col-md-6">
-    <label class="form-label">Tipe</label>
-    <select name="tipe" class="form-select select2" required>
-        <option value="">-- Pilih --</option>
-        <option value="Komersil" <?= $barang['tipe'] == 'Komersil' ? 'selected' : '' ?>>Komersil</option>
-        <option value="Militer" <?= $barang['tipe'] == 'Militer' ? 'selected' : '' ?>>Militer</option>
-        <option value="Jasa" <?= $barang['tipe'] == 'Jasa' ? 'selected' : '' ?>>Jasa</option>
-        <option value="Non_core" <?= $barang['tipe'] == 'Non_core' ? 'selected' : '' ?>>Non Core</option>
-        <option value="Perbaikan" <?= $barang['tipe'] == 'Perbaikan' ? 'selected' : '' ?>>Perbaikan</option>
-        <option value="Petty_cash" <?= $barang['tipe'] == 'Petty_cash' ? 'selected' : '' ?>>Petty Cash</option>
-    </select>
-</div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipe</label>
+                            <select name="tipe" class="form-select" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="Komersil" <?= $barang['tipe'] == 'Komersil' ? 'selected' : '' ?>>Komersil</option>
+                                <option value="Militer" <?= $barang['tipe'] == 'Militer' ? 'selected' : '' ?>>Militer</option>
+                                <option value="Jasa" <?= $barang['tipe'] == 'Jasa' ? 'selected' : '' ?>>Jasa</option>
+                                <option value="Non_core" <?= $barang['tipe'] == 'Non_core' ? 'selected' : '' ?>>Non Core</option>
+                                <option value="Perbaikan" <?= $barang['tipe'] == 'Perbaikan' ? 'selected' : '' ?>>Perbaikan</option>
+                                <option value="Petty_cash" <?= $barang['tipe'] == 'Petty_cash' ? 'selected' : '' ?>>Petty Cash</option>
+                            </select>
+                        </div>
 
                         <div class="col-md-12">
                             <label class="form-label">No SPB</label>
-                            <input type="text" name="no_spb" class="form-control" 
-                                   value="<?= esc($barang['no_spb']) ?>" required>
+                            <input type="text" name="no_spb" class="form-control" value="<?= esc($barang['no_spb']) ?>" required>
                         </div>
 
                         <div class="col-md-12">
                             <label class="form-label">Nama Barang</label>
-                            <input type="text" name="nama_barang" class="form-control" 
-                                   value="<?= esc($barang['nama_barang']) ?>" required>
+                            <input type="text" name="nama_barang" class="form-control" value="<?= esc($barang['nama_barang']) ?>" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Jumlah Total</label>
-                            <input type="number" name="jumlah" class="form-control" 
-                                   value="<?= esc($barang['jumlah']) ?>" min="1" required>
+                            <input type="number" name="jumlah" class="form-control" value="<?= esc($barang['jumlah']) ?>" min="1" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Satuan</label>
-                            <input type="text" name="satuan" class="form-control" 
-                                   value="<?= esc($barang['satuan']) ?>" required>
+                            <input type="text" name="satuan" class="form-control" value="<?= esc($barang['satuan']) ?>" required>
                         </div>
 
                         <div class="col-md-12">
                             <label class="form-label">Asal</label>
-                            <input type="text" name="asal" class="form-control" 
-                                   value="<?= esc($barang['asal']) ?>" required>
+                            <input type="text" name="asal" class="form-control" value="<?= esc($barang['asal']) ?>" required>
                         </div>
 
                         <div class="col-md-12">
                             <label class="form-label">Tujuan</label>
-                            <input type="text" name="tujuan" class="form-control" 
-                                   value="<?= esc($barang['tujuan']) ?>" required>
+                            <input type="text" name="tujuan" class="form-control" value="<?= esc($barang['tujuan']) ?>" required>
                         </div>
 
-                        <!-- BARANG AKAN KEMBALI -->
                         <div class="col-md-6">
                             <div class="form-check mt-3">
-                                <input class="form-check-input" type="checkbox" 
-                                       name="akan_kembali" id="akanKembali<?= $barang['id'] ?>" 
-                                       value="Ya" <?= ($barang['akan_kembali'] ?? 'Tidak') === 'Ya' ? 'checked' : '' ?>>
+                                <input class="form-check-input" type="checkbox" name="akan_kembali" id="akanKembali<?= $barang['id'] ?>" value="Ya" <?= ($barang['akan_kembali'] ?? 'Tidak') === 'Ya' ? 'checked' : '' ?>>
                                 <label class="form-check-label" for="akanKembali<?= $barang['id'] ?>">
                                     Barang Akan Kembali
                                 </label>
                             </div>
                         </div>
 
-                        <!-- ESTIMASI KEMBALI -->
-                        <div class="col-md-6" id="estimasiKembaliWrapper<?= $barang['id'] ?>" 
-                             style="<?= ($barang['akan_kembali'] ?? 'Tidak') === 'Ya' ? '' : 'display: none;' ?>">
+                        <div class="col-md-6" id="estimasiKembaliWrapper<?= $barang['id'] ?>" style="<?= ($barang['akan_kembali'] ?? 'Tidak') === 'Ya' ? '' : 'display: none;' ?>">
                             <label class="form-label">Estimasi Kembali</label>
-                            <input type="date" name="estimasi_kembali" class="form-control" 
-                                   value="<?= esc($barang['estimasi_kembali'] ?? '') ?>">
+                            <input type="date" name="estimasi_kembali" class="form-control" value="<?= esc($barang['estimasi_kembali'] ?? '') ?>">
                         </div>
                     </div>
                 </div>
@@ -348,10 +747,8 @@
         </div>
     </div>
 </div>
-<?php endforeach ?>
 
-<!-- MODAL DETAIL UNTUK SETIAP BARANG -->
-<?php foreach ($barangs as $barang): ?>
+<!-- MODAL DETAIL BARANG -->
 <div class="modal fade" id="DetailModal<?= $barang['id'] ?>" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -360,7 +757,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <!-- INFO UTAMA -->
                 <div class="card mb-3 shadow-sm">
                     <div class="card-header bg-light fw-semibold">
                         <i class="bi bi-box-seam"></i> Informasi Barang
@@ -399,7 +795,6 @@
                     </div>
                 </div>
 
-                <!-- STATUS -->
                 <div class="card mb-3 shadow-sm">
                     <div class="card-header bg-light fw-semibold">
                         <i class="bi bi-info-circle"></i> Status & Mode
@@ -454,65 +849,72 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- RIWAYAT -->
+<div class="card shadow-sm">
+    <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clock-history"></i> Riwayat Aktivitas</span>
+        <span class="badge bg-secondary"><?= count($barang['history'] ?? []) ?> aktivitas</span>
+    </div>
+    <div class="card-body p-0">
+        <?php if (!empty($barang['history'])): ?>
+            <div class="table-responsive" style="max-height:300px">
+                <table class="table table-sm table-striped mb-0">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Aksi</th>
+                            <th>Jumlah</th>
+                            <th>Sisa</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        // Urutkan dari terlama ke terbaru (ASC) agar log Selesai ada di paling bawah
+                        $historySorted = $barang['history'];
+                        usort($historySorted, function($a, $b) {
+                            return strtotime($a['created_at']) - strtotime($b['created_at']);
+                        });
+                        
+                        foreach ($historySorted as $hist): 
+                        ?>
+                            <tr>
+                                <td>
+                                    <small><?= date('d/m/Y', strtotime($hist['created_at'])) ?></small><br>
+                                    <small class="text-muted"><?= date('H:i:s', strtotime($hist['created_at'])) ?></small>
+                                </td>
+                                <td>
+                                    <?php
+                                    $badge = match ($hist['aksi']) {
+                                        'Registrasi' => 'primary',
+                                        'Masuk' => 'success',
+                                        'Keluar' => 'warning',
+                                        'Kembali' => 'info',
+                                        'Selesai' => 'dark',
+                                        default => 'secondary'
+                                    };
+                                    ?>
+                                    <span class="badge bg-<?= $badge ?>">
+                                        <?= esc($hist['aksi']) ?>
+                                    </span>
+                                </td>
+                                <td><?= esc($hist['jumlah']) ?> <?= esc($barang['satuan']) ?></td>
+                                <td><?= esc($hist['sisa']) ?> <?= esc($barang['satuan']) ?></td>
+                                <td><small><?= esc($hist['keterangan']) ?></small></td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <div class="p-4 text-center text-muted">
+                <i class="bi bi-inbox display-6"></i><br>
+                <h6 class="mt-3">Belum ada riwayat aktivitas</h6>
+            </div>
+        <?php endif ?>
+    </div>
+</div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- RIWAYAT -->
-                <div class="card shadow-sm">
-                    <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-clock-history"></i> Riwayat Aktivitas</span>
-                        <span class="badge bg-secondary"><?= count($barang['history'] ?? []) ?> aktivitas</span>
-                    </div>
-                    <div class="card-body p-0">
-                        <?php if (!empty($barang['history'])): ?>
-                            <div class="table-responsive" style="max-height:300px">
-                                <table class="table table-sm table-striped mb-0">
-                                    <thead class="table-light sticky-top">
-                                        <tr>
-                                            <th>Waktu</th>
-                                            <th>Aksi</th>
-                                            <th>Jumlah</th>
-                                            <th>Sisa</th>
-                                            <th>Keterangan</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach (array_reverse($barang['history']) as $hist): ?>
-                                            <tr>
-                                                <td>
-                                                    <small><?= date('d/m/Y', strtotime($hist['created_at'])) ?></small><br>
-                                                    <small class="text-muted"><?= date('H:i:s', strtotime($hist['created_at'])) ?></small>
-                                                </td>
-                                                <td>
-                                                    <?php
-                                                    $badge = match ($hist['aksi']) {
-                                                        'Registrasi' => 'primary',
-                                                        'Masuk' => 'success',
-                                                        'Keluar' => 'warning',
-                                                        'Kembali' => 'info',
-                                                        'Selesai' => 'dark',
-                                                        default => 'secondary'
-                                                    };
-                                                    ?>
-                                                    <span class="badge bg-<?= $badge ?>">
-                                                        <?= esc($hist['aksi']) ?>
-                                                    </span>
-                                                </td>
-                                                <td><?= esc($hist['jumlah']) ?> <?= esc($barang['satuan']) ?></td>
-                                                <td><?= esc($hist['sisa']) ?> <?= esc($barang['satuan']) ?></td>
-                                                <td><small><?= esc($hist['keterangan']) ?></small></td>
-                                            </tr>
-                                        <?php endforeach ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php else: ?>
-                            <div class="p-4 text-center text-muted">
-                                <i class="bi bi-inbox display-6"></i><br>
-                                <h6 class="mt-3">Belum ada riwayat aktivitas</h6>
-                            </div>
-                        <?php endif ?>
                     </div>
                 </div>
             </div>
@@ -522,282 +924,93 @@
         </div>
     </div>
 </div>
-<?php endforeach ?>
 
-<!-- MODAL BARANG KELUAR UNTUK SETIAP BARANG -->
-<?php foreach ($barangs as $barang): ?>
-<?php
-$sisa = (int)$barang['jumlah'] - (int)$barang['jumlah_keluar'];
-?>
-<div class="modal fade"
-     id="KeluarModal<?= $barang['id'] ?>"
-     tabindex="-1"
-     aria-hidden="true">
+<!-- MODAL KELUAR BARANG -->
+<div class="modal fade" id="KeluarModal<?= $barang['id'] ?>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-
-            <form method="post"
-                  action="/registrasi/prosesKeluar/<?= $barang['id'] ?>">
+            <form method="post" action="/registrasi/prosesKeluar/<?= $barang['id'] ?>">
                 <?= csrf_field() ?>
-
-                <!-- HEADER -->
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-box-arrow-up"></i>
-                        Proses Barang Keluar
+                        <i class="bi bi-box-arrow-up"></i> Proses Barang Keluar
                     </h5>
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
-                <!-- BODY -->
                 <div class="modal-body">
-
-                    <!-- NAMA BARANG -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nama Barang</label>
-                        <input type="text"
-                               class="form-control"
-                               value="<?= esc($barang['nama_barang']) ?>"
-                               readonly>
+                        <input type="text" class="form-control" value="<?= esc($barang['nama_barang']) ?>" readonly>
                     </div>
-
-                    <!-- JUMLAH TOTAL -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Jumlah Total</label>
-                        <input type="text"
-                               class="form-control"
-                               value="<?= number_format($barang['jumlah']) ?> <?= esc($barang['satuan']) ?>"
-                               readonly>
+                        <input type="text" class="form-control" value="<?= number_format($barang['jumlah']) ?> <?= esc($barang['satuan']) ?>" readonly>
                     </div>
-
-                    <!-- SUDAH KELUAR -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Sudah Keluar</label>
-                        <input type="text"
-                               class="form-control"
-                               value="<?= number_format($barang['jumlah_keluar']) ?> <?= esc($barang['satuan']) ?>"
-                               readonly>
+                        <input type="text" class="form-control" value="<?= number_format($barang['jumlah_keluar']) ?> <?= esc($barang['satuan']) ?>" readonly>
                     </div>
-
-                    <!-- JUMLAH KELUAR -->
+                    <?php $sisaKeluar = (int)$barang['jumlah'] - (int)$barang['jumlah_keluar']; ?>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">
-                            Jumlah Keluar Sekarang
-                        </label>
-
-                        <input type="number"
-                               name="jumlah_keluar"
-                               class="form-control"
-                               min="1"
-                               max="<?= $sisa ?>"
-                               value="<?= $sisa > 0 ? $sisa : 1 ?>"
-                               required>
-
-                        <small class="text-muted">
-                            Sisa barang yang dapat dikeluarkan:
-                            <strong><?= $sisa ?> <?= esc($barang['satuan']) ?></strong>
-                        </small>
+                        <label class="form-label fw-bold">Jumlah Keluar Sekarang</label>
+                        <input type="number" name="jumlah_keluar" class="form-control" min="1" max="<?= $sisaKeluar ?>" value="<?= $sisaKeluar > 0 ? $sisaKeluar : 1 ?>" required>
+                        <small class="text-muted">Sisa barang yang dapat dikeluarkan: <strong><?= $sisaKeluar ?> <?= esc($barang['satuan']) ?></strong></small>
                     </div>
-
                 </div>
-
-                <!-- FOOTER -->
                 <div class="modal-footer">
-                    <button type="submit"
-                            class="btn btn-success">
-                        <i class="bi bi-box-arrow-up"></i>
-                        Proses Keluar
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-box-arrow-up"></i> Proses Keluar
                     </button>
-
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal">
-                        Batal
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                 </div>
-
             </form>
-
         </div>
     </div>
 </div>
-<?php endforeach ?>
 
-<!-- MODAL BARANG MASUK UNTUK SETIAP BARANG -->
-<?php foreach ($barangs as $barang): ?>
-<?php
-$sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
-?>
-<div class="modal fade"
-     id="MasukModal<?= $barang['id'] ?>"
-     tabindex="-1"
-     aria-hidden="true">
+<!-- MODAL MASUK BARANG -->
+<div class="modal fade" id="MasukModal<?= $barang['id'] ?>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-
-            <form method="post"
-                  action="/registrasi/prosesMasuk/<?= $barang['id'] ?>">
+            <form method="post" action="/registrasi/prosesMasuk/<?= $barang['id'] ?>">
                 <?= csrf_field() ?>
-
-                <!-- HEADER -->
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-box-arrow-in-down"></i>
-                        Proses Barang Masuk
+                        <i class="bi bi-box-arrow-in-down"></i> Proses Barang Masuk
                     </h5>
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
-                <!-- BODY -->
                 <div class="modal-body">
-
-                    <!-- NAMA BARANG -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Nama Barang</label>
-                        <input type="text"
-                               class="form-control"
-                               value="<?= esc($barang['nama_barang']) ?>"
-                               readonly>
+                        <input type="text" class="form-control" value="<?= esc($barang['nama_barang']) ?>" readonly>
                     </div>
-
-                    <!-- JUMLAH TOTAL -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Jumlah Total</label>
-                        <input type="text"
-                               class="form-control"
-                               value="<?= number_format($barang['jumlah']) ?> <?= esc($barang['satuan']) ?>"
-                               readonly>
+                        <input type="text" class="form-control" value="<?= number_format($barang['jumlah']) ?> <?= esc($barang['satuan']) ?>" readonly>
                     </div>
-
-                    <!-- SUDAH MASUK -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Sudah Masuk</label>
-                        <input type="text"
-                               class="form-control"
-                               value="<?= number_format($barang['jumlah_kembali']) ?> <?= esc($barang['satuan']) ?>"
-                               readonly>
+                        <input type="text" class="form-control" value="<?= number_format($barang['jumlah_kembali']) ?> <?= esc($barang['satuan']) ?>" readonly>
                     </div>
-
-                    <!-- JUMLAH MASUK -->
+                    <?php $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali']; ?>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">
-                            Jumlah Masuk Sekarang
-                        </label>
-
-                        <input type="number"
-                               name="jumlah_masuk"
-                               class="form-control"
-                               min="1"
-                               max="<?= $sisaMasuk ?>"
-                               value="<?= $sisaMasuk > 0 ? $sisaMasuk : 1 ?>"
-                               required>
-
-                        <small class="text-muted">
-                            Sisa barang yang dapat dimasukkan:
-                            <strong><?= $sisaMasuk ?> <?= esc($barang['satuan']) ?></strong>
-                        </small>
+                        <label class="form-label fw-bold">Jumlah Masuk Sekarang</label>
+                        <input type="number" name="jumlah_masuk" class="form-control" min="1" max="<?= $sisaMasuk ?>" value="<?= $sisaMasuk > 0 ? $sisaMasuk : 1 ?>" required>
+                        <small class="text-muted">Sisa barang yang dapat dimasukkan: <strong><?= $sisaMasuk ?> <?= esc($barang['satuan']) ?></strong></small>
                     </div>
-
                 </div>
-
-                <!-- FOOTER -->
                 <div class="modal-footer">
-                    <button type="submit"
-                            class="btn btn-success">
-                        <i class="bi bi-box-arrow-in-down"></i>
-                        Proses Masuk
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-box-arrow-in-down"></i> Proses Masuk
                     </button>
-
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal">
-                        Batal
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                 </div>
-
             </form>
-
         </div>
     </div>
 </div>
-<?php endforeach ?>
-
-<!-- MODAL SELESAI UNTUK SETIAP BARANG -->
-<?php foreach ($barangs as $barang): ?>
-<?php if ($barang['status'] !== 'Selesai'): ?>
-<div class="modal fade"
-     id="SelesaiModal<?= $barang['id'] ?>"
-     tabindex="-1"
-     aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <form method="post"
-                  action="/registrasi/selesai/<?= $barang['id'] ?>">
-                <?= csrf_field() ?>
-
-                <!-- HEADER -->
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-check2-circle"></i>
-                        Tandai Sebagai Selesai
-                    </h5>
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"></button>
-                </div>
-
-                <!-- BODY -->
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i>
-                        Anda akan menandai barang ini sebagai <strong>Selesai</strong>.
-                        Pastikan semua proses sudah selesai.
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nama Barang</label>
-                        <input type="text"
-                               class="form-control"
-                               value="<?= esc($barang['nama_barang']) ?>"
-                               readonly>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Keterangan Tambahan (Opsional)</label>
-                        <textarea name="catatan_selesai" 
-                                  class="form-control" 
-                                  rows="3"
-                                  placeholder="Tambahkan catatan jika perlu..."></textarea>
-                    </div>
-                </div>
-
-                <!-- FOOTER -->
-                <div class="modal-footer">
-                    <button type="submit"
-                            class="btn btn-dark">
-                        <i class="bi bi-check2-circle"></i>
-                        Ya, Tandai Selesai
-                    </button>
-
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal">
-                        Batal
-                    </button>
-                </div>
-
-            </form>
-
-        </div>
-    </div>
-</div>
-<?php endif; ?>
-<?php endforeach ?>
+<?php endforeach; ?>
 
 <!-- MODAL REGISTRASI BARANG MASUK -->
 <div class="modal fade" id="registrasiModal" tabindex="-1">
@@ -815,22 +1028,21 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
 
                         <div class="col-md-6">
                             <label class="form-label">No Agenda</label>
-                            <input type="text" name="no_agenda" value="<?= esc($noAgenda ?? 'M-0000') ?>" 
-                                   class="form-control" readonly>
+                            <input type="text" name="no_agenda" value="<?= esc($noAgenda ?? 'M-0000') ?>" class="form-control" readonly>
                         </div>
 
-<div class="col-md-6">
-    <label class="form-label">Tipe Barang</label>
-    <select name="tipe" class="form-select select2" required>
-        <option value="">-- Pilih --</option>
-        <option value="Komersil">Komersil</option>
-        <option value="Militer">Militer</option>
-        <option value="Jasa">Jasa</option>
-        <option value="Non_core">Non Core</option>
-        <option value="Perbaikan">Perbaikan</option>
-        <option value="Petty_cash">Petty Cash</option>
-    </select>
-</div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipe Barang</label>
+                            <select name="tipe" class="form-select" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="Komersil">Komersil</option>
+                                <option value="Militer">Militer</option>
+                                <option value="Jasa">Jasa</option>
+                                <option value="Non_core">Non Core</option>
+                                <option value="Perbaikan">Perbaikan</option>
+                                <option value="Petty_cash">Petty Cash</option>
+                            </select>
+                        </div>
 
                         <div class="col-md-12">
                             <label class="form-label">No SPB</label>
@@ -844,8 +1056,7 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
 
                         <div class="col-md-6">
                             <label class="form-label">Jumlah Total</label>
-                            <input type="number" name="jumlah" class="form-control jumlah-total" 
-                                   id="totalJumlahMasuk" value="1" min="1" required>
+                            <input type="number" name="jumlah" class="form-control jumlah-total" id="totalJumlahMasuk" value="1" min="1" required>
                         </div>
 
                         <div class="col-md-6">
@@ -858,35 +1069,33 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                             <input type="text" name="asal" class="form-control" required>
                         </div>
 
-<div class="col-md-6">
-    <label class="form-label">Tujuan Barang <span class="text-danger">*</span></label>
-    <select name="tujuan" class="form-select select2" required>
-        <option value="">-- Pilih Divisi --</option>
-        <optgroup label="Divisi Produksi">
-            <option value="Divisi Senjata">Divisi Senjata</option>
-            <option value="Divisi Kendaraan Khusus">Divisi Kendaraan Khusus</option>
-            <option value="Divisi Munisi">Divisi Munisi</option>
-            <option value="Divisi Tempa & Cor">Divisi Tempa & Cor</option>
-            <option value="Divisi Produk Industri & Jasa">Divisi Produk Industri & Jasa</option>
-        </optgroup>
-        <optgroup label="Divisi Pendukung">
-            <option value="Divisi Litbang (R&D)">Divisi Litbang (R&D)</option>
-            <option value="Divisi Quality Assurance (QA)">Divisi Quality Assurance (QA)</option>
-            <option value="Divisi Maintenance, Repair & Overhaul (MRO)">Divisi Maintenance, Repair & Overhaul (MRO)</option>
-            <option value="Divisi SDM & Pengembangan Organisasi">Divisi SDM & Pengembangan Organisasi</option>
-        </optgroup>
-    </select>
-</div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tujuan Barang <span class="text-danger">*</span></label>
+                            <select name="tujuan" class="form-select" required>
+                                <option value="">-- Pilih Divisi --</option>
+                                <optgroup label="Divisi Produksi">
+                                    <option value="Divisi Senjata">Divisi Senjata</option>
+                                    <option value="Divisi Kendaraan Khusus">Divisi Kendaraan Khusus</option>
+                                    <option value="Divisi Munisi">Divisi Munisi</option>
+                                    <option value="Divisi Tempa & Cor">Divisi Tempa & Cor</option>
+                                    <option value="Divisi Produk Industri & Jasa">Divisi Produk Industri & Jasa</option>
+                                </optgroup>
+                                <optgroup label="Divisi Pendukung">
+                                    <option value="Divisi Litbang (R&D)">Divisi Litbang (R&D)</option>
+                                    <option value="Divisi Quality Assurance (QA)">Divisi Quality Assurance (QA)</option>
+                                    <option value="Divisi Maintenance, Repair & Overhaul (MRO)">Divisi Maintenance, Repair & Overhaul (MRO)</option>
+                                    <option value="Divisi SDM & Pengembangan Organisasi">Divisi SDM & Pengembangan Organisasi</option>
+                                </optgroup>
+                            </select>
+                        </div>
 
-                        <!-- MODE SECTION -->
                         <div class="col-12 mt-3">
                             <h6 class="border-bottom pb-2">Mode Pengiriman</h6>
                         </div>
 
                         <div class="col-md-6">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="partialCheckMasuk" name="is_partial">
+                                <input class="form-check-input" type="checkbox" id="partialCheckMasuk" name="is_partial">
                                 <label class="form-check-label" for="partialCheckMasuk">
                                     <strong>Partial (Bertahap)</strong>
                                 </label>
@@ -896,8 +1105,7 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
 
                         <div class="col-md-6">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="kembaliCheckMasuk" name="akan_kembali" value="Ya">
+                                <input class="form-check-input" type="checkbox" id="kembaliCheckMasuk" name="akan_kembali" value="Ya">
                                 <label class="form-check-label" for="kembaliCheckMasuk">
                                     <strong>Barang Akan Kembali</strong>
                                 </label>
@@ -905,11 +1113,9 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                             </div>
                         </div>
 
-                        <!-- PARTIAL FIELDS -->
                         <div class="col-md-6 d-none" id="jumlahWrapperMasuk">
                             <label class="form-label">Jumlah Masuk Pertama</label>
-                            <input type="number" name="jumlah_masuk" class="form-control jumlah-masuk" 
-                                   id="jumlahInputMasuk" min="1" value="1">
+                            <input type="number" name="jumlah_masuk" class="form-control jumlah-masuk" id="jumlahInputMasuk" min="1" value="1">
                             <div class="form-text">Jumlah yang masuk pertama kali</div>
                         </div>
 
@@ -919,11 +1125,9 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                             <div class="form-text">Akan otomatis terhitung</div>
                         </div>
 
-                        <!-- ESTIMASI KEMBALI -->
                         <div class="col-md-6 d-none" id="estimasiWrapperMasuk">
                             <label class="form-label">Estimasi Tanggal Kembali</label>
-                            <input type="date" name="estimasi_kembali" class="form-control" 
-                                   id="estimasiDateMasuk">
+                            <input type="date" name="estimasi_kembali" class="form-control" id="estimasiDateMasuk">
                             <div class="form-text">Perkiraan tanggal barang akan kembali</div>
                         </div>
                     </div>
@@ -931,94 +1135,6 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-success">Simpan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL REGISTRASI LAPTOP -->
-<div class="modal fade" id="laptopModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form method="post" action="barang/laptop/store">
-                <?= csrf_field() ?>
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-laptop"></i> 
-                        Registrasi Laptop Baru
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Nama Pengguna <span class="text-danger">*</span></label>
-                            <input type="text" name="nama_pengguna" class="form-control" 
-                                   placeholder="Masukkan nama pengguna" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Nomor ID Card <span class="text-danger">*</span></label>
-                            <input type="text" name="nomor_id_card" class="form-control" 
-                                   placeholder="Contoh: PEG-2024-001" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Instansi/Divisi <span class="text-danger">*</span></label>
-                            <input type="text" name="instansi_divisi" class="form-control" 
-                                   placeholder="Nama Sekolah/Divisi" required>
-                        </div>
-                        
-<div class="col-md-6">
-    <label class="form-label">Merek Laptop <span class="text-danger">*</span></label>
-    <select name="merek" class="form-select select2" required>
-        <option value="">-- Pilih Merek --</option>
-        <option value="Dell">Dell</option>
-        <option value="HP">HP</option>
-        <option value="Lenovo">Lenovo</option>
-        <option value="Asus">Asus</option>
-        <option value="Acer">Acer</option>
-        <option value="Apple">Apple</option>
-        <option value="Toshiba">Toshiba</option>
-        <option value="Fujitsu">Fujitsu</option>
-        <option value="Lainnya">Lainnya</option>
-    </select>
-</div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Tipe Laptop</label>
-                            <input type="text" name="tipe_laptop" class="form-control" 
-                                   placeholder="Contoh: Latitude 5420, ThinkPad X1">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Nomor Seri <span class="text-danger">*</span></label>
-                            <input type="text" name="nomor_seri" class="form-control" 
-                                   placeholder="Nomor seri laptop" required>
-                            <small class="text-muted">Nomor seri harus sesuai</small>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Berlaku Sampai Dengan <span class="text-danger">*</span></label>
-                            <input type="date" name="berlaku_sampai" class="form-control" 
-                                   min="<?= date('Y-m-d') ?>" required>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label">Spesifikasi Lain (RAM, Processor, Storage, dll)</label>
-                            <textarea name="spesifikasi_lain" class="form-control" rows="3"
-                                      placeholder="Contoh: Intel Core i7, RAM 16GB, SSD 512GB, Windows 11 Pro"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x"></i> Batal
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save"></i> Simpan Data Laptop
-                    </button>
                 </div>
             </form>
         </div>
@@ -1039,22 +1155,21 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">No Agenda</label>
-                            <input type="text" name="no_registrasi" value="<?= esc($noAgendaKeluar ?? 'K-0000') ?>" 
-                                   class="form-control" readonly>
+                            <input type="text" name="no_agenda" value="<?= esc($noAgendaKeluar ?? 'K-0000') ?>" class="form-control" readonly>
                         </div>
 
-<div class="col-md-6">
-    <label class="form-label">Tipe Barang</label>
-    <select name="tipe" class="form-select select2" required>
-        <option value="">-- Pilih --</option>
-        <option value="Komersil">Komersil</option>
-        <option value="Militer">Militer</option>
-        <option value="Jasa">Jasa</option>
-        <option value="Non_core">Non Core</option>
-        <option value="Perbaikan">Perbaikan</option>
-        <option value="Petty_cash">Petty Cash</option>
-    </select>
-</div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipe Barang</label>
+                            <select name="tipe" class="form-select" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="Komersil">Komersil</option>
+                                <option value="Militer">Militer</option>
+                                <option value="Jasa">Jasa</option>
+                                <option value="Non_core">Non Core</option>
+                                <option value="Perbaikan">Perbaikan</option>
+                                <option value="Petty_cash">Petty Cash</option>
+                            </select>
+                        </div>
 
                         <div class="col-md-12">
                             <label class="form-label">No SPB</label>
@@ -1068,33 +1183,31 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
 
                         <div class="col-md-6">
                             <label class="form-label">Jumlah Total</label>
-                            <input type="number" name="jumlah" class="form-control jumlah-total" 
-                                   id="totalJumlahKeluar" value="1" min="1" required>
+                            <input type="number" name="jumlah" class="form-control jumlah-total" id="totalJumlahKeluar" value="1" min="1" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Satuan</label>
                             <input type="text" name="satuan" class="form-control" required>
                         </div>
-<div class="col-md-6">
-    <label class="form-label">Asal (Perusahaan)</label>
-    <input type="text" name="asal" class="form-control" value="PT PINDAD" readonly>
-</div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Asal (Perusahaan)</label>
+                            <input type="text" name="asal" class="form-control" value="PT PINDAD" readonly>
+                        </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Tujuan</label>
                             <input type="text" name="tujuan" class="form-control" required>
                         </div>
 
-                        <!-- MODE SECTION -->
                         <div class="col-12 mt-3">
                             <h6 class="border-bottom pb-2">Mode Pengiriman</h6>
                         </div>
 
                         <div class="col-md-6">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="partialCheckKeluar" name="is_partial">
+                                <input class="form-check-input" type="checkbox" id="partialCheckKeluar" name="is_partial">
                                 <label class="form-check-label" for="partialCheckKeluar">
                                     <strong>Partial (Bertahap)</strong>
                                 </label>
@@ -1104,8 +1217,7 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
 
                         <div class="col-md-6">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="kembaliCheckKeluar" name="akan_kembali" value="Ya">
+                                <input class="form-check-input" type="checkbox" id="kembaliCheckKeluar" name="akan_kembali" value="Ya">
                                 <label class="form-check-label" for="kembaliCheckKeluar">
                                     <strong>Barang Akan Kembali</strong>
                                 </label>
@@ -1113,11 +1225,9 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                             </div>
                         </div>
 
-                        <!-- PARTIAL FIELDS -->
                         <div class="col-md-6 d-none" id="jumlahWrapperKeluar">
                             <label class="form-label">Jumlah Keluar Pertama</label>
-                            <input type="number" name="jumlah_masuk" class="form-control jumlah-masuk" 
-                                   id="jumlahInputKeluar" min="1" value="1">
+                            <input type="number" name="jumlah_masuk" class="form-control jumlah-masuk" id="jumlahInputKeluar" min="1" value="1">
                             <div class="form-text">Jumlah yang keluar pertama kali</div>
                         </div>
 
@@ -1127,11 +1237,9 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
                             <div class="form-text">Akan otomatis terhitung</div>
                         </div>
 
-                        <!-- ESTIMASI KEMBALI -->
                         <div class="col-md-6 d-none" id="estimasiWrapperKeluar">
                             <label class="form-label">Estimasi Tanggal Kembali</label>
-                            <input type="date" name="estimasi_kembali" class="form-control" 
-                                   id="estimasiDateKeluar">
+                            <input type="date" name="estimasi_kembali" class="form-control" id="estimasiDateKeluar">
                             <div class="form-text">Perkiraan tanggal barang akan kembali</div>
                         </div>
                     </div>
@@ -1145,6 +1253,7 @@ $sisaMasuk = (int)$barang['jumlah'] - (int)$barang['jumlah_kembali'];
     </div>
 </div>
 
+<!-- JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Setup untuk modal edit barang
@@ -1319,7 +1428,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 <!-- Select2 Initialization Script -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Inisialisasi Select2 untuk semua dropdown
@@ -1334,157 +1448,361 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function initSelect2() {
-        // Select2 untuk dropdown dengan class .select2
         $('.select2').select2({
-            theme: 'bootstrap-5',
             width: '100%',
             placeholder: '-- Pilih --',
             allowClear: true
         });
-
-        // Select2 untuk dropdown dengan class .select2-tags (untuk input tags)
-        $('.select2-tags').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            tags: true,
-            placeholder: 'Pilih atau ketik baru',
-            allowClear: true
-        });
-
-        // Select2 untuk dropdown dengan pencarian dinamis
-        $('.select2-ajax').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: 'Ketik untuk mencari...',
-            minimumInputLength: 2,
-            allowClear: true,
-            ajax: {
-                url: function(params) {
-                    // URL akan ditentukan oleh data-url attribute
-                    return $(this).data('url');
-                },
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    return {
-                        q: params.term,
-                        page: params.page || 1
-                    };
-                },
-                processResults: function(data, params) {
-                    return {
-                        results: data.items,
-                        pagination: {
-                            more: data.more
-                        }
-                    };
-                },
-                cache: true
-            }
-        });
     }
 
     function initSelect2InModal(modal) {
-        // Destroy existing Select2 instances
-        $(modal).find('select.select2, select.select2-tags, select.select2-ajax').each(function() {
+        $(modal).find('select.select2').each(function() {
             if ($(this).hasClass('select2-hidden-accessible')) {
                 $(this).select2('destroy');
             }
         });
 
-        // Re-initialize
         $(modal).find('.select2').select2({
-            theme: 'bootstrap-5',
             width: '100%',
             placeholder: '-- Pilih --',
             allowClear: true,
             dropdownParent: $(modal)
         });
-
-        $(modal).find('.select2-tags').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            tags: true,
-            placeholder: 'Pilih atau ketik baru',
-            allowClear: true,
-            dropdownParent: $(modal)
-        });
-
-        $(modal).find('.select2-ajax').select2({
-            theme: 'bootstrap-5',
-            width: '100%',
-            placeholder: 'Ketik untuk mencari...',
-            minimumInputLength: 2,
-            allowClear: true,
-            dropdownParent: $(modal),
-            ajax: {
-                url: function() {
-                    return $(this).data('url');
-                },
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    return {
-                        q: params.term,
-                        page: params.page || 1
-                    };
-                },
-                processResults: function(data, params) {
-                    return {
-                        results: data.items,
-                        pagination: {
-                            more: data.more
-                        }
-                    };
-                },
-                cache: true
-            }
-        });
     }
 });
 </script>
 
-<!-- Optional: Style tambahan untuk Select2 -->
+<script>
+function printLaptop(id) {
+<?php foreach ($laptops as $laptop): ?>
+if (id === <?= $laptop['id'] ?>) {
+
+var data = <?= json_encode($laptop) ?>;
+var w = window.open('', '_blank');
+
+w.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Surat Izin Membawa Laptop</title>
 <style>
-.select2-container--bootstrap-5 .select2-selection {
-    min-height: 38px;
-    border: 1px solid #dee2e6;
+@page {
+    size: A4 landscape;
+    margin: 15mm;
 }
 
-.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
-    line-height: 36px;
-    padding-left: 12px;
+html, body{
+    margin:0;
+    padding:0;
+    font-family: Arial, sans-serif;
+    font-size:12px;
 }
 
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
-    padding: 2px 8px;
+/* ===== LAYOUT UTAMA ===== */
+.page{
+    display:flex;
+    width:100%;
 }
 
-.select2-container--bootstrap-5 .select2-dropdown {
-    border-color: #dee2e6;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* ===== KOLOM ===== */
+.left-side{
+    flex:0 0 55%;
+    padding-right:15px;
+    box-sizing:border-box;
 }
 
-.select2-container--bootstrap-5 .select2-results__option--highlighted {
-    background-color: #0d6efd;
-    color: white;
+.right-side{
+    flex:0 0 45%;
+    padding:8mm 6mm 6mm 6mm; /* SAFE PRINT AREA */
+    box-sizing:border-box;
 }
 
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
-    background-color: #e9ecef;
-    border-color: #dee2e6;
-    border-radius: 4px;
-    padding: 2px 8px;
-    margin: 2px;
+/* ===== HEADER ===== */
+.top-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:6px;
 }
 
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
-    color: #6c757d;
-    margin-right: 4px;
+.logo-left{
+    width:110px;
+    height:auto;
 }
 
-.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
-    color: #dc3545;
+.logo-right{
+    width:95px;
+    height:auto;
+    margin-bottom:4px;
+}
+
+.noreg-box{
+    border:1px solid #000;
+    padding:4px 8px;
+    width:160px;
+    font-size:11px;
+    margin-top:3px;
+}
+
+/* ===== JUDUL ===== */
+.center-line{
+    text-align:center;
+    margin-top:3px;
+}
+
+.pt{
+    font-weight:bold;
+    font-size:14px;
+}
+
+.title-main{
+    font-weight:bold;
+    font-size:15px;
+}
+
+.subtitle{
+    font-size:11px;
+}
+
+/* ===== DASAR ===== */
+.dasar-row{
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin-top:8px;
+    font-size:11px;
+}
+
+/* ===== FORM ===== */
+.form-row{
+    display:flex;
+    align-items:center;
+    margin-top:5px;
+    font-size:11px;
+}
+
+.label{
+    width:140px;
+}
+
+.colon{
+    width:15px;
+    text-align:center;
+}
+
+.line-fill{
+    flex:1;
+    border-bottom:1px solid #000;
+    padding-left:5px;
+    min-height:16px;
+}
+
+/* ===== TABEL 28 BARIS PAS 1 HALAMAN ===== */
+table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+
+table, th, td{
+    border:1px solid #000;
+}
+
+th{
+    font-size:9px;
+    padding:2px;
+    text-align:center;
+}
+
+td{
+    font-size:8px;
+    padding:1px;
+    text-align:center;
+    height:16px;  /* presisi agar 28 baris muat */
+}
+
+/* ===== TANDA TANGAN ===== */
+.signature-section{
+    display:flex;
+    justify-content:space-between;
+    margin-top:25px;
+    font-size:11px;
+}
+
+.sign-box{
+    width:45%;
+    text-align:center;
+}
+
+.sign-line{
+    width:140px;
+    margin:35px auto 0 auto;
+    border-top:1px solid #000;
+}
+
+/* ===== PRINT CONTROL ===== */
+@media print{
+    .print-buttons{
+        display:none;
+    }
+}
+
+/* ===== TOMBOL PRINT ===== */
+.print-buttons{
+    position:fixed;
+    bottom:15px;
+    right:15px;
+}
+
+.print-buttons button{
+    padding:6px 12px;
+    font-size:12px;
+    cursor:pointer;
 }
 </style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- KOLOM KIRI -->
+    <div class="left-side">
+<div class="top-header">
+
+    <div class="left-logo">
+        <img src="/assets/img/logodi.png" class="logo-left">
+    </div>
+
+    <div class="right-area">
+        <img src="/assets/img/logop.png" class="logo-right">
+
+        <div class="noreg-box">
+            No Reg : __________
+        </div>
+    </div>
+
+</div>
+
+        <div class="center-line pt">
+            PT PINDAD
+        </div>
+
+        <div class="center-line">
+            DIVISI PENGAMANAN
+        </div>
+
+        <div class="center-line title-main">
+            SURAT IZIN MEMBAWA LAPTOP
+        </div>
+
+        <div class="center-line subtitle">
+            PERMISSION LETTER TO BRING LAPTOP
+        </div>
+
+        <div class="dasar-row">
+            <div><strong>Dasar :</strong> ____________________________</div>
+            <div><strong>Tgl :</strong> ____________________________</div>
+        </div>
+
+        <div class="form-row">
+    <span class="label">Nama</span>
+    <span class="colon">:</span>
+    <span class="line-fill">${data.nama_pengguna || ''}</span>
+</div>
+
+<div class="form-row">
+    <span class="label">Nomor ID</span>
+    <span class="colon">:</span>
+    <span class="line-fill">${data.nomor_id_card || ''}</span>
+</div>
+
+<div class="form-row">
+    <span class="label">Instansi</span>
+    <span class="colon">:</span>
+    <span class="line-fill">${data.instansi_divisi || ''}</span>
+</div>
+
+<div class="form-row">
+    <span class="label">Merek</span>
+    <span class="colon">:</span>
+    <span class="line-fill">${data.merek || ''}</span>
+</div>
+
+<div class="form-row">
+    <span class="label">Tipe</span>
+    <span class="colon">:</span>
+    <span class="line-fill">${data.tipe_laptop || ''}</span>
+</div>
+
+<div class="form-row">
+    <span class="label">No Seri</span>
+    <span class="colon">:</span>
+    <span class="line-fill">${data.nomor_seri || ''}</span>
+</div>
+
+<div class="form-row">
+    <span class="label">Berlaku Sampai</span>
+    <span class="colon">:</span>
+    <span class="line-fill">${data.berlaku_sampai || ''}</span>
+</div>
+
+        <div style="margin-top:20px;">
+            Demikian surat izin ini dibuat untuk dipergunakan sebagaimana mestinya.
+        </div>
+<div class="signature-section">
+
+    <div class="sign-box">
+        Mengetahui<br>
+        <strong>Petugas Div PAM</strong><br>
+        Seccurity Officer
+        <div class="sign-line"></div>
+    </div>
+
+    <div class="sign-box">
+        Bandung,<br>
+        <strong>Yang Membawa</strong><br>
+        The Beorer
+        <div class="sign-line"></div>
+    </div>
+
+</div>
+    </div>
+
+    <div class="right-side">
+
+    <table>
+    <tr>
+        <th colspan="2">MASUK</th>
+        <th colspan="2">KELUAR</th>
+    </tr>
+    <tr>
+        <th>Tanggal</th>
+        <th>Paraf</th>
+        <th>Tanggal</th>
+        <th>Paraf</th>
+    </tr>
+
+${'<tr><td></td><td></td><td></td><td></td></tr>'.repeat(28)}
+</table>
+
+    </div>
+
+</div>
+<div class="print-buttons">
+    <button onclick="window.print()">Print</button>
+    <button onclick="window.close()">Kembali</button>
+</div>
+</body>
+</html>
+`);
+
+w.document.close();
+return;
+}
+<?php endforeach; ?>
+
+alert("Data tidak ditemukan");
+}
+</script>
 <?= $this->endSection() ?>
