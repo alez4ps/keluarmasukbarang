@@ -49,10 +49,17 @@ $routes->get('registrasi/kembali/(:num)', 'Barang::kembali/$1');
 $routes->post('registrasi/prosesKembali/(:num)', 'Barang::prosesKembali/$1');
 $routes->get('registrasi/kembaliLangsung/(:num)', 'Barang::kembaliLangsung/$1');
 
-$routes->get('logs', 'BarangLog::index');
-$routes->get('logs/export', 'BarangLog::export');
+$routes->group('logs', function($routes) {
+    $routes->get('/', 'BarangLog::index');
+    $routes->get('export', 'BarangLog::export');
+    $routes->get('barang/(:num)', 'BarangLog::detailBarang/$1');
+    $routes->get('laptop/(:num)', 'BarangLog::detailLaptop/$1');
+    $routes->post('delete-barang/(:num)', 'BarangLog::deleteBarangLog/$1');
+    $routes->post('delete-laptop/(:num)', 'BarangLog::deleteLaptopLog/$1');
+});
 
 $routes->get('/barang/laptop', 'Barang::laptop');
+$routes->get('/barang/searchLaptop', 'Barang::searchLaptop'); // TAMBAHKAN INI
 $routes->post('/barang/laptop/store', 'Barang::storeLaptop');
 $routes->get('/barang/laptop/edit/(:num)', 'Barang::editLaptop/$1');
 $routes->post('/barang/laptop/update/(:num)', 'Barang::updateLaptop/$1');

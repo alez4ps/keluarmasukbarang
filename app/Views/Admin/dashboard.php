@@ -17,10 +17,10 @@
 .card {
     background: #ffffff;
     border-radius: 12px;
-    border-left: 5px solid #1cc88a; /* HIJAU JELAS */
+    border-left: 5px solid #1c6cc8; /* HIJAU JELAS */
     box-shadow:
         0 4px 14px rgba(0,0,0,.06),
-        0 0 12px rgba(28,200,138,.35); /* GREEN GLOW */
+        0 0 12px rgba(28, 94, 200, 0.35); /* GREEN GLOW */
     transition: all .3s ease;
 }
 
@@ -29,7 +29,7 @@
     transform: translateY(-4px);
     box-shadow:
         0 10px 25px rgba(0,0,0,.08),
-        0 0 20px rgba(28,200,138,.55);
+        0 0 20px rgba(28, 123, 200, 0.55);
 }
 
 
@@ -43,7 +43,7 @@
     background: linear-gradient(
         135deg,
         rgba(78,115,223,.6),
-        rgba(54,185,204,.6)
+        rgba(0, 86, 190, 0.6)
     );
     -webkit-mask:
         linear-gradient(#fff 0 0) content-box,
@@ -137,9 +137,9 @@
 
 
 <div class="fade-in">
-    <h3 class="mb-4 text-success" style="font-weight:300; letter-spacing:1px;">
-        <i class="bi bi-speedometer2"></i> Dashboard Statistik
-    </h3>
+<h3 class="mb-4" style="font-weight:300; letter-spacing:1px; color: #003366;">
+    <i class="bi bi-speedometer2" style="color: #003366;"></i> Dashboard Statistik
+</h3>
 
     <!-- Card Statistik -->
     <div class="row g-4 card-container">

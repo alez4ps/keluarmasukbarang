@@ -43,9 +43,9 @@
 }
 
 :root{
-  --green:#1f7a4d;
-  --green-soft:#e6f4ee;
-  --green-dark:#155d3a;
+  --blue:#0066b3;
+  --blue-soft:#e6f0fa;
+  --blue-dark:#004b82;
 }
 
 /* HEADER */
@@ -55,7 +55,7 @@
 }
 
 .logo span {
-  color: var(--green) !important;
+  color: var(--blue) !important;
   font-weight: 700;
 }
 
@@ -72,20 +72,20 @@
 }
 
 .sidebar-nav .nav-link i {
-  color: var(--green);
+  color: var(--blue);
 }
 
 /* HOVER */
 .sidebar-nav .nav-link:hover {
-  background-color: var(--green-soft);
-  color: var(--green);
+  background-color: var(--blue-soft);
+  color: var(--blue);
 }
 
 /* ACTIVE MENU */
 .sidebar-nav .nav-link.active {
-  background-color: var(--green);
+  background-color: var(--blue);
   color: #ffffff !important;
-  box-shadow: 0 6px 18px rgba(31,122,77,.35);
+  box-shadow: 0 6px 18px rgba(0,102,179,.35);
 }
 
 .sidebar-nav .nav-link.active i {
@@ -106,30 +106,30 @@
 
 /* BUTTON */
 .btn-primary {
-  background-color: var(--green);
-  border-color: var(--green);
+  background-color: var(--blue);
+  border-color: var(--blue);
 }
 
 .btn-primary:hover {
-  background-color: var(--green-dark);
-  border-color: var(--green-dark);
+  background-color: var(--blue-dark);
+  border-color: var(--blue-dark);
 }
 
 /* FOOTER */
 .footer {
   background-color: transparent;
   border-top: 1px solid #e5e7eb;
-  color: #6b7280; /* abu soft */
+  color: #6b7280;
   font-size: 0.85rem;
 }
 
 .footer strong span {
-  color: #1f7a4d; /* hijau corporate */
+  color: #0066b3;
   font-weight: 600;
 }
 
 .footer a {
-  color: #1f7a4d;
+  color: #0066b3;
   text-decoration: none;
   font-weight: 500;
 }

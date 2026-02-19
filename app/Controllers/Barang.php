@@ -699,9 +699,36 @@ class Barang extends BaseController
         $data['status'] = $status;
         $data['status_options'] = ['Masih Berlaku', 'Tidak Berlaku'];
 
-        return view('laptop/index', $data);
+        return view('registrasi/index', $data);
+    }
+public function searchLaptop()
+{
+    $keyword = $this->request->getGet('keyword');
+    $status = $this->request->getGet('status');
+
+    $builder = $this->laptop;
+
+    if ($keyword) {
+        $builder = $builder->groupStart()
+            ->like('nama_pengguna', $keyword)
+            ->orLike('nomor_id_card', $keyword)
+            ->orLike('instansi_divisi', $keyword)
+            ->orLike('merek', $keyword)
+            ->orLike('tipe_laptop', $keyword)
+            ->orLike('nomor_seri', $keyword)
+            ->orLike('spesifikasi_lain', $keyword)
+            ->groupEnd();
     }
 
+    if ($status && $status != 'Semua' && $status != '') {
+        $builder = $builder->where('status', $status);
+    }
+
+    $data['laptops'] = $builder->orderBy('id', 'DESC')->findAll();
+
+    // Kembalikan hanya partial view untuk tabel
+    return view('laptop/table', $data);
+}
     public function storeLaptop()
     {
         $nomorSeri = $this->request->getPost('nomor_seri');
@@ -875,39 +902,107 @@ class Barang extends BaseController
     }
 
     public function exportLaptop()
-    {
-        $laptops = $this->laptop->orderBy('id', 'DESC')->findAll();
+{
+    $laptops = $this->laptop->orderBy('id', 'DESC')->findAll();
+    $totalData = count($laptops);
 
-        $this->response->setHeader('Content-Type', 'text/csv');
-        $this->response->setHeader('Content-Disposition', 'attachment; filename="laptops_' . date('Ymd') . '.csv"');
-
-        $output = fopen('php://output', 'w');
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    
+    $sheet->setTitle('Data Laptop');
+    
+    $sheet->setCellValue('A1', 'NO');
+    $sheet->setCellValue('B1', 'NAMA PENGGUNA');
+    $sheet->setCellValue('C1', 'NOMOR ID CARD');
+    $sheet->setCellValue('D1', 'INSTANSI/DIVISI');
+    $sheet->setCellValue('E1', 'MEREK');
+    $sheet->setCellValue('F1', 'TIPE');
+    $sheet->setCellValue('G1', 'NOMOR SERI');
+    $sheet->setCellValue('H1', 'BERLAKU SAMPAI');
+    $sheet->setCellValue('I1', 'SPESIFIKASI');
+    $sheet->setCellValue('J1', 'STATUS');
+    $sheet->setCellValue('K1', 'KETERANGAN');
+    
+    $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+    $sheet->getStyle('A1:K1')->getFill()
+        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+        ->getStartColor()->setARGB('FF0066B3'); // Biru Pindad
+    $sheet->getStyle('A1:K1')->getFont()->getColor()->setARGB('FFFFFFFF');
+    
+    $row = 2;
+    foreach ($laptops as $i => $l) {
+        $sheet->setCellValue('A' . $row, $i + 1);
+        $sheet->setCellValue('B' . $row, $l['nama_pengguna']);
+        $sheet->setCellValue('C' . $row, $l['nomor_id_card']);
+        $sheet->setCellValue('D' . $row, $l['instansi_divisi']);
+        $sheet->setCellValue('E' . $row, $l['merek']);
+        $sheet->setCellValue('F' . $row, $l['tipe_laptop']);
+        $sheet->setCellValue('G' . $row, $l['nomor_seri']);
+        $sheet->setCellValue('H' . $row, date('d-m-Y', strtotime($l['berlaku_sampai'])));
+        $sheet->setCellValue('I' . $row, $l['spesifikasi_lain']);
         
-        fputcsv($output, [
-            'No', 'Nama Pengguna', 'Nomor ID Card', 'Instansi/Divisi', 
-            'Merek', 'Tipe', 'Nomor Seri', 'Berlaku Sampai', 
-            'Spesifikasi', 'Status', 'Keterangan'
-        ]);
-
-        foreach ($laptops as $i => $l) {
-            fputcsv($output, [
-                $i + 1,
-                $l['nama_pengguna'],
-                $l['nomor_id_card'],
-                $l['instansi_divisi'],
-                $l['merek'],
-                $l['tipe_laptop'],
-                $l['nomor_seri'],
-                $l['berlaku_sampai'],
-                $l['spesifikasi_lain'],
-                $l['status'],
-                $l['keterangan']
-            ]);
+        $sheet->setCellValue('J' . $row, $l['status']);
+        if ($l['status'] == 'Masih Berlaku') {
+            $sheet->getStyle('J' . $row)->getFont()->getColor()->setARGB('FF008000'); // Hijau
+        } else {
+            $sheet->getStyle('J' . $row)->getFont()->getColor()->setARGB('FFFF0000'); // Merah
         }
-
-        fclose($output);
-        exit;
+        
+        $sheet->setCellValue('K' . $row, $l['keterangan']);
+        $row++;
     }
+    
+    $lastRow = $row;
+    
+    $sheet->setCellValue('A' . $lastRow, '');
+    $lastRow++;
+    
+    $sheet->setCellValue('A' . $lastRow, 'TOTAL DATA:');
+    $sheet->setCellValue('B' . $lastRow, $totalData . ' Laptop');
+    $sheet->getStyle('A' . $lastRow . ':B' . $lastRow)->getFont()->setBold(true);
+    $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FF0066B3');
+    
+    $lastRow++;
+    $aktif = $this->laptop->where('status', 'Masih Berlaku')->countAllResults();
+    $nonaktif = $this->laptop->where('status', 'Tidak Berlaku')->countAllResults();
+    
+    $sheet->setCellValue('A' . $lastRow, 'Status Masih Berlaku:');
+    $sheet->setCellValue('B' . $lastRow, $aktif . ' Laptop');
+    $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FF008000');
+    
+    $lastRow++;
+    $sheet->setCellValue('A' . $lastRow, 'Status Tidak Berlaku:');
+    $sheet->setCellValue('B' . $lastRow, $nonaktif . ' Laptop');
+    $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FFFF0000');
+    
+    $lastRow++;
+    $sheet->setCellValue('A' . $lastRow, 'Tanggal Export:');
+    $sheet->setCellValue('B' . $lastRow, date('d-m-Y H:i:s'));
+    $sheet->getStyle('A' . $lastRow)->getFont()->setItalic(true);
+    
+    foreach (range('A', 'K') as $column) {
+        $sheet->getColumnDimension($column)->setAutoSize(true);
+    }
+    
+    $styleArray = [
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+        ],
+    ];
+    $sheet->getStyle('A1:K' . ($row - 1))->applyFromArray($styleArray);
+    
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $filename = 'data_laptop_' . date('Ymd_His') . '.xlsx';
+    
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="' . $filename . '"');
+    header('Cache-Control: max-age=0');
+    
+    $writer->save('php://output');
+    exit;
+}
 
     public function logs()
     {

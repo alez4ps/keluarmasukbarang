@@ -3,7 +3,6 @@
 
 <h2 class="mb-3">Data Barang Keluar / Masuk & Laptop</h2>
 
-<!-- TAB NAVIGATION -->
 <ul class="nav nav-tabs mb-3" id="mainTab" role="tablist">
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="barang-tab" data-bs-toggle="tab" data-bs-target="#barang" type="button" role="tab" aria-controls="barang" aria-selected="true">
@@ -17,12 +16,9 @@
     </li>
 </ul>
 
-<!-- TAB CONTENT -->
 <div class="tab-content" id="mainTabContent">
-    <!-- TAB BARANG -->
     <div class="tab-pane fade show active" id="barang" role="tabpanel" aria-labelledby="barang-tab">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <!-- ACTION GROUP -->
             <div class="d-flex gap-2">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrasiModal">
                     <i class="bi bi-box-arrow-down"></i> Barang Masuk
@@ -43,7 +39,6 @@
             </form>
         </div>
 
-        <!-- TABLE BARANG -->
         <div class="table-responsive">
             <table class="table table-bordered table-hover table-striped">
                 <thead class="table-light">
@@ -240,122 +235,38 @@
         </div>
     </div>
 
-    <!-- TAB LAPTOP -->
-    <div class="tab-pane fade" id="laptop" role="tabpanel" aria-labelledby="laptop-tab">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#laptopModal">
-                    <i class="bi bi-laptop"></i>Registrasi Laptop
-                </button>
-                <a href="/barang/laptop/export" class="btn btn-success ms-2">
-                    <i class="bi bi-file-earmark-excel"></i> Export CSV
-                </a>
-            </div>
-
-            <form action="/barang/laptop" method="get" class="d-flex gap-2">
-                <select name="status" class="form-select" style="width: 150px;">
-                    <option value="">Semua Status</option>
-                    <option value="Masih Berlaku" <?= ($status ?? '') == 'Masih Berlaku' ? 'selected' : '' ?>>Masih Berlaku</option>
-                    <option value="Tidak Berlaku" <?= ($status ?? '') == 'Tidak Berlaku' ? 'selected' : '' ?>>Tidak Berlaku</option>
-                </select>
-                <input type="text" name="keyword" class="form-control"
-                       placeholder="Cari pengguna / merek / seri..."
-                       value="<?= esc($keywordLaptop ?? '') ?>">
-                <button class="btn btn-outline-secondary" type="submit">
-                    <i class="bi bi-search"></i>
-                </button>
-            </form>
+<div class="tab-pane fade" id="laptop" role="tabpanel" aria-labelledby="laptop-tab">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#laptopModal">
+                <i class="bi bi-laptop"></i> Registrasi Laptop
+            </button>
+            <a href="/barang/laptop/export" class="btn btn-success ms-2">
+                <i class="bi bi-file-earmark-excel"></i> Export
+            </a>
         </div>
 
-        <!-- TABLE LAPTOP -->
-<div class="table-responsive">
-    <table class="table table-bordered table-hover table-striped">
-        <thead class="table-light">
-            <tr>
-                <th>#</th>
-                <th>Nama Pengguna</th>
-                <th>ID Card</th>
-                <th>Instansi/Divisi</th>
-                <th>Merek</th>
-                <th>Tipe</th>
-                <th>Nomor Seri</th>
-                <th>Berlaku Sampai</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($laptops)): ?>
-                <tr>
-                    <td colspan="10" class="text-center text-muted py-4">
-                        <i class="bi bi-inbox"></i> Tidak ada data laptop
-                    </td>
-                </tr>
-            <?php endif; ?>
+        <form class="d-flex gap-2" id="searchLaptopForm">
+            <input type="text" id="searchKeyword" class="form-control" 
+                   placeholder="Cari pengguna / merek / seri..."
+                   value="<?= esc($keywordLaptop ?? '') ?>">
+            <select id="searchStatus" class="form-select" style="width: 150px;">
+                <option value="">Semua Status</option>
+                <option value="Masih Berlaku" <?= ($statusLaptop ?? '') == 'Masih Berlaku' ? 'selected' : '' ?>>Masih Berlaku</option>
+                <option value="Tidak Berlaku" <?= ($statusLaptop ?? '') == 'Tidak Berlaku' ? 'selected' : '' ?>>Tidak Berlaku</option>
+            </select>
+            <button type="submit" class="btn btn-outline-secondary" id="btnSearchLaptop">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+    </div>
 
-            <?php foreach ($laptops as $index => $laptop): ?>
-            <tr>
-                <td><?= $index + 1 ?></td>
-                <td><?= esc($laptop['nama_pengguna']) ?></td>
-                <td><?= esc($laptop['nomor_id_card']) ?></td>
-                <td><?= esc($laptop['instansi_divisi']) ?></td>
-                <td><?= esc($laptop['merek']) ?></td>
-                <td><?= esc($laptop['tipe_laptop']) ?></td>
-                <td><?= esc($laptop['nomor_seri']) ?></td>
-                <td>
-                    <?= date('d/m/Y', strtotime($laptop['berlaku_sampai'])) ?>
-                    <?php if (strtotime($laptop['berlaku_sampai']) < time()): ?>
-                        <span class="badge bg-danger">Expired</span>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <?php
-                    $badge = match($laptop['status']) {
-                        'Masih Berlaku' => 'success',
-                        'tidak Berlaku' => 'secondary',
-                        default => 'primary'
-                    };
-                    ?>
-                    <span class="badge bg-<?= $badge ?>"><?= $laptop['status'] ?></span>
-                </td>
-                <td>
-                    <div class="d-flex gap-1">
-                        <!-- Tombol Detail (Modal) -->
-                        <button class="btn btn-sm btn-info" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#detailLaptopModal<?= $laptop['id'] ?>">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        
-                        <!-- Tombol Print -->
-                        <button class="btn btn-sm btn-secondary" 
-                                onclick="printLaptop(<?= $laptop['id'] ?>)">
-                            <i class="bi bi-printer"></i>
-                        </button>
-                        
-                        <!-- Tombol Edit -->
-                        <button class="btn btn-sm btn-warning" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#editLaptopModal<?= $laptop['id'] ?>">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        
-                        <!-- Tombol Hapus -->
-                        <button class="btn btn-sm btn-danger" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#deleteLaptopModal<?= $laptop['id'] ?>">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <?php endforeach ?>
-        </tbody>
-    </table>
-</div>
+    <div id="laptopTableContainer">
+        <?= $this->include('laptop/table') ?>
     </div>
 </div>
-<!-- MODAL DETAIL LAPTOP UNTUK SETIAP LAPTOP -->
+</div>
+
 <?php foreach ($laptops as $laptop): ?>
 <div class="modal fade" id="detailLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -368,7 +279,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <!-- INFORMASI LAPTOP -->
                 <div class="card mb-3 shadow-sm">
                     <div class="card-header bg-light fw-semibold">
                         <i class="bi bi-info-circle"></i> Informasi Laptop
@@ -414,7 +324,6 @@
                     </div>
                 </div>
 
-                <!-- STATUS LAPTOP -->
                 <div class="card mb-3 shadow-sm">
                     <div class="card-header bg-light fw-semibold">
                         <i class="bi bi-activity"></i> Status Laptop
@@ -457,7 +366,6 @@
 </div>
 <?php endforeach; ?>
 
-<!-- MODAL REGISTRASI LAPTOP -->
 <div class="modal fade" id="laptopModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -545,7 +453,6 @@
     </div>
 </div>
 
-<!-- MODAL EDIT LAPTOP UNTUK SETIAP LAPTOP -->
 <?php foreach ($laptops as $laptop): ?>
 <div class="modal fade" id="editLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -637,7 +544,6 @@
     </div>
 </div>
 
-<!-- MODAL DELETE LAPTOP -->
 <div class="modal fade" id="deleteLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -662,9 +568,7 @@
 </div>
 <?php endforeach; ?>
 
-<!-- ===== SEMUA MODAL EXISTING UNTUK BARANG ===== -->
 <?php foreach ($barangs as $barang): ?>
-<!-- MODAL EDIT BARANG -->
 <div class="modal fade" id="EditModal<?= $barang['id'] ?>" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -748,7 +652,6 @@
     </div>
 </div>
 
-<!-- MODAL DETAIL BARANG -->
 <div class="modal fade" id="DetailModal<?= $barang['id'] ?>" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -849,7 +752,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- RIWAYAT -->
 <div class="card shadow-sm">
     <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
         <span><i class="bi bi-clock-history"></i> Riwayat Aktivitas</span>
@@ -870,7 +772,6 @@
                     </thead>
                     <tbody>
                         <?php 
-                        // Urutkan dari terlama ke terbaru (ASC) agar log Selesai ada di paling bawah
                         $historySorted = $barang['history'];
                         usort($historySorted, function($a, $b) {
                             return strtotime($a['created_at']) - strtotime($b['created_at']);
@@ -925,7 +826,6 @@
     </div>
 </div>
 
-<!-- MODAL KELUAR BARANG -->
 <div class="modal fade" id="KeluarModal<?= $barang['id'] ?>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -968,7 +868,6 @@
     </div>
 </div>
 
-<!-- MODAL MASUK BARANG -->
 <div class="modal fade" id="MasukModal<?= $barang['id'] ?>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -1012,7 +911,6 @@
 </div>
 <?php endforeach; ?>
 
-<!-- MODAL REGISTRASI BARANG MASUK -->
 <div class="modal fade" id="registrasiModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -1141,7 +1039,6 @@
     </div>
 </div>
 
-<!-- MODAL REGISTRASI BARANG KELUAR -->
 <div class="modal fade" id="keluarModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -1175,6 +1072,8 @@
                             <label class="form-label">No SPB</label>
                             <input type="text" name="no_spb" class="form-control" required>
                         </div>
+
+                        <input type="hidden" name="tanggal" value="<?= date('Y-m-d H:i:s') ?>">
 
                         <div class="col-md-12">
                             <label class="form-label">Nama Barang</label>
@@ -1253,10 +1152,8 @@
     </div>
 </div>
 
-<!-- JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Setup untuk modal edit barang
     <?php foreach ($barangs as $barang): ?>
     const akanKembaliCheckbox<?= $barang['id'] ?> = document.getElementById('akanKembali<?= $barang['id'] ?>');
     const estimasiWrapper<?= $barang['id'] ?> = document.getElementById('estimasiKembaliWrapper<?= $barang['id'] ?>');
@@ -1279,10 +1176,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     <?php endforeach; ?>
 
-    // Setup modal registrasi barang masuk
     setupModalRegistrasi('registrasiModal', 'Masuk');
     
-    // Setup modal registrasi barang keluar
     setupModalRegistrasi('keluarModal', 'Keluar');
 
     function setupModalRegistrasi(modalId, type) {
@@ -1300,7 +1195,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const estimasiWrapper = modal.querySelector(`#estimasiWrapper${type}`);
         const estimasiDate = modal.querySelector(`#estimasiDate${type}`);
 
-        // PARTIAL CHECKBOX
         if (partialCheck) {
             partialCheck.addEventListener('change', function() {
                 if (this.checked) {
@@ -1321,7 +1215,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Hitung sisa
             if (jumlahInput && sisaInput && totalJumlahInput) {
                 jumlahInput.addEventListener('input', calculateSisa);
                 totalJumlahInput.addEventListener('input', calculateSisa);
@@ -1344,7 +1237,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // KEMBALI CHECKBOX
         if (kembaliCheck) {
             kembaliCheck.addEventListener('change', function() {
                 if (this.checked) {
@@ -1362,7 +1254,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Set default date
         if (estimasiDate && !estimasiDate.value) {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -1370,7 +1261,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Handle jumlah total changes
     document.querySelectorAll('.jumlah-total').forEach(input => {
         input.addEventListener('input', function() {
             const value = parseInt(this.value) || 1;
@@ -1397,7 +1287,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Validasi form
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function(e) {
             const partialCheck = this.querySelector('[id^="partialCheck"]:checked');
@@ -1429,17 +1318,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Select2 Initialization Script -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Inisialisasi Select2 untuk semua dropdown
     initSelect2();
     
-    // Re-inisialisasi Select2 ketika modal dibuka
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
         modal.addEventListener('shown.bs.modal', function() {
@@ -1499,13 +1385,11 @@ html, body{
     font-size:12px;
 }
 
-/* ===== LAYOUT UTAMA ===== */
 .page{
     display:flex;
     width:100%;
 }
 
-/* ===== KOLOM ===== */
 .left-side{
     flex:0 0 55%;
     padding-right:15px;
@@ -1514,11 +1398,10 @@ html, body{
 
 .right-side{
     flex:0 0 45%;
-    padding:8mm 6mm 6mm 6mm; /* SAFE PRINT AREA */
+    padding:8mm 6mm 6mm 6mm;
     box-sizing:border-box;
 }
 
-/* ===== HEADER ===== */
 .top-header{
     display:flex;
     justify-content:space-between;
@@ -1545,7 +1428,6 @@ html, body{
     margin-top:3px;
 }
 
-/* ===== JUDUL ===== */
 .center-line{
     text-align:center;
     margin-top:3px;
@@ -1565,7 +1447,6 @@ html, body{
     font-size:11px;
 }
 
-/* ===== DASAR ===== */
 .dasar-row{
     display:flex;
     justify-content:center;
@@ -1574,7 +1455,6 @@ html, body{
     font-size:11px;
 }
 
-/* ===== FORM ===== */
 .form-row{
     display:flex;
     align-items:center;
@@ -1598,7 +1478,6 @@ html, body{
     min-height:16px;
 }
 
-/* ===== TABEL 28 BARIS PAS 1 HALAMAN ===== */
 table{
     width:100%;
     border-collapse:collapse;
@@ -1619,10 +1498,9 @@ td{
     font-size:8px;
     padding:1px;
     text-align:center;
-    height:16px;  /* presisi agar 28 baris muat */
+    height:16px;
 }
 
-/* ===== TANDA TANGAN ===== */
 .signature-section{
     display:flex;
     justify-content:space-between;
@@ -1641,14 +1519,12 @@ td{
     border-top:1px solid #000;
 }
 
-/* ===== PRINT CONTROL ===== */
 @media print{
     .print-buttons{
         display:none;
     }
 }
 
-/* ===== TOMBOL PRINT ===== */
 .print-buttons{
     position:fixed;
     bottom:15px;
@@ -1666,7 +1542,6 @@ td{
 
 <div class="page">
 
-    <!-- KOLOM KIRI -->
     <div class="left-side">
 <div class="top-header">
 
@@ -1804,5 +1679,98 @@ return;
 
 alert("Data tidak ditemukan");
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('searchLaptopForm');
+    const keywordInput = document.getElementById('searchKeyword');
+    const statusSelect = document.getElementById('searchStatus');
+    const tableContainer = document.getElementById('laptopTableContainer');
+    const btnSearch = document.getElementById('btnSearchLaptop');
+    
+    if (window.location.hash === '#laptop-tab') {
+        document.getElementById('laptop-tab').click();
+    }
+    
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            history.pushState(null, null, e.target.hash);
+        });
+    });
+    
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const keyword = keywordInput.value;
+            const status = statusSelect.value;
+            
+            btnSearch.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btnSearch.disabled = true;
+            
+            fetch(`/barang/searchLaptop?keyword=${encodeURIComponent(keyword)}&status=${encodeURIComponent(status)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                tableContainer.innerHTML = html;
+                initModals();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Gagal memuat data: ' + error.message);
+            })
+            .finally(() => {
+                btnSearch.innerHTML = '<i class="bi bi-search"></i>';
+                btnSearch.disabled = false;
+            });
+        });
+    }
+    
+    let timeout = null;
+    if (keywordInput) {
+        keywordInput.addEventListener('keyup', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                searchForm.dispatchEvent(new Event('submit'));
+            }, 500);
+        });
+    }
+    
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            searchForm.dispatchEvent(new Event('submit'));
+        });
+    }
+    
+    function initModals() {
+        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+            button.replaceWith(button.cloneNode(true));
+        });
+        
+        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = this.getAttribute('data-bs-target');
+                if (target) {
+                    const modalElement = document.querySelector(target);
+                    if (modalElement) {
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    }
+                }
+            });
+        });
+    }
+    
+    initModals();
+});
 </script>
 <?= $this->endSection() ?>
