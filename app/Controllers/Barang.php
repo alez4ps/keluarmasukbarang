@@ -22,103 +22,147 @@ class Barang extends BaseController
         $this->laptopLog = new LaptopLogModel();
     }
 
-    public function index()
-    {
-        $keyword = $this->request->getGet('keyword');
-        $builder = $this->barang;
+    /**
+     * HALAMAN UTAMA REGISTRASI
+     */
+public function index()
+{
+    // ========== DATA BARANG ==========
+    $keyword = $this->request->getGet('keyword');
+    $builder = $this->barang;
 
-        if ($keyword) {
-            $builder = $builder
-                ->groupStart()
-                    ->like('no_agenda', $keyword)
-                    ->orLike('no_spb', $keyword)
-                    ->orLike('tanggal', $keyword)
-                    ->orLike('nama_barang', $keyword)
-                    ->orLike('jumlah', $keyword)
-                    ->orLike('satuan', $keyword)
-                    ->orLike('asal', $keyword)
-                    ->orLike('tujuan', $keyword)
-                    ->orLike('tipe', $keyword)
-                    ->orLike('is_partial', $keyword)
-                    ->orLike('keterangan', $keyword)
-                    ->orLike('status', $keyword)
-                ->groupEnd();
-        }
-
-        $barangs = $builder->orderBy('tanggal', 'DESC')->findAll();
-
-        $barangIds = array_column($barangs, 'id');
-
-        $logs = [];
-        if (!empty($barangIds)) {
-            $logData = $this->barangLog
-                ->whereIn('barang_id', $barangIds)
-                ->orderBy('created_at', 'ASC')
-                ->findAll();
-
-            foreach ($logData as $log) {
-                $logs[$log['barang_id']][] = $log;
-            }
-        }
-
-        foreach ($barangs as &$barang) {
-            $barang['history'] = $logs[$barang['id']] ?? [];
-            $barang['masuk_penuh'] = $barang['masuk_penuh'] == 1;
-        }
-
-        // AMBIL DATA LAPTOP
-        $keywordLaptop = $this->request->getGet('keyword_laptop');
-        $statusLaptop = $this->request->getGet('status_laptop');
-        
-        $builderLaptop = $this->laptop;
-
-        if ($keywordLaptop) {
-            $builderLaptop = $builderLaptop->groupStart()
-                ->like('nama_pengguna', $keywordLaptop)
-                ->orLike('nomor_id_card', $keywordLaptop)
-                ->orLike('instansi_divisi', $keywordLaptop)
-                ->orLike('merek', $keywordLaptop)
-                ->orLike('tipe_laptop', $keywordLaptop)
-                ->orLike('nomor_seri', $keywordLaptop)
-                ->orLike('spesifikasi_lain', $keywordLaptop)
-                ->groupEnd();
-        }
-
-        if ($statusLaptop && $statusLaptop != 'Semua') {
-            $builderLaptop = $builderLaptop->where('status', $statusLaptop);
-        }
-
-        $laptops = $builderLaptop->orderBy('id', 'DESC')->findAll();
-
-        $data['barangs'] = $barangs;
-        $data['laptops'] = $laptops;
-        $data['keyword'] = $keyword;
-        $data['keywordLaptop'] = $keywordLaptop;
-        $data['statusLaptop'] = $statusLaptop;
-
-        $db = \Config\Database::connect();
-
-        $q = $db->query("
-            SELECT IFNULL(MAX(CAST(SUBSTRING(no_agenda,4) AS UNSIGNED)),0) + 1 AS next
-            FROM barang
-            WHERE no_agenda LIKE 'M-%'
-              AND YEAR(tanggal) = YEAR(CURDATE())
-        ");
-        $data['noAgenda'] = 'M-' . str_pad($q->getRow()->next, 4, '0', STR_PAD_LEFT);
-
-        $d = $db->query("
-            SELECT IFNULL(MAX(CAST(SUBSTRING(no_agenda,4) AS UNSIGNED)),0) + 1 AS next
-            FROM barang
-            WHERE no_agenda LIKE 'K-%'
-              AND YEAR(tanggal) = YEAR(CURDATE())
-        ");
-        $data['noAgendaKeluar'] = 'K-' . str_pad($d->getRow()->next, 4, '0', STR_PAD_LEFT);
-
-        $data['tanggal'] = date('Y-m-d H:i:s');
-
-        return view('registrasi/index', $data);
+    if ($keyword) {
+        $builder = $builder
+            ->groupStart()
+                ->like('no_agenda', $keyword)
+                ->orLike('no_spb', $keyword)
+                ->orLike('tanggal', $keyword)
+                ->orLike('nama_barang', $keyword)
+                ->orLike('jumlah', $keyword)
+                ->orLike('satuan', $keyword)
+                ->orLike('asal', $keyword)
+                ->orLike('tujuan', $keyword)
+                ->orLike('tipe', $keyword)
+                ->orLike('is_partial', $keyword)
+                ->orLike('keterangan', $keyword)
+                ->orLike('status', $keyword)
+            ->groupEnd();
     }
 
+    $barangs = $builder->orderBy('tanggal', 'DESC')->findAll();
+
+    $barangIds = array_column($barangs, 'id');
+
+    $logs = [];
+    if (!empty($barangIds)) {
+        $logData = $this->barangLog
+            ->whereIn('barang_id', $barangIds)
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        foreach ($logData as $log) {
+            $logs[$log['barang_id']][] = $log;
+        }
+    }
+
+    foreach ($barangs as &$barang) {
+        $barang['history'] = $logs[$barang['id']] ?? [];
+        $barang['masuk_penuh'] = $barang['masuk_penuh'] == 1;
+    }
+
+    // ========== DATA LAPTOP ==========
+    $keywordLaptop = $this->request->getGet('keyword_laptop');
+    $statusLaptop = $this->request->getGet('status_laptop');
+    
+    $builderLaptop = $this->laptop;
+
+    if ($keywordLaptop) {
+        $builderLaptop = $builderLaptop->groupStart()
+            ->like('nama_pengguna', $keywordLaptop)
+            ->orLike('nomor_id_card', $keywordLaptop)
+            ->orLike('instansi_divisi', $keywordLaptop)
+            ->orLike('merek', $keywordLaptop)
+            ->orLike('tipe_laptop', $keywordLaptop)
+            ->orLike('nomor_seri', $keywordLaptop)
+            ->orLike('spesifikasi_lain', $keywordLaptop)
+            ->orLike('no_registrasi', $keywordLaptop)
+            ->orLike('jenis', $keywordLaptop)
+            ->groupEnd();
+    }
+
+    if ($statusLaptop && $statusLaptop != 'Semua') {
+        $builderLaptop = $builderLaptop->where('status', $statusLaptop);
+    }
+
+    $laptops = $builderLaptop->orderBy('created_at', 'DESC')->findAll();
+
+    // ========== HITUNG REGISTRASI KE UNTUK SETIAP LAPTOP ==========
+    foreach ($laptops as &$laptop) {
+        // Ambil logs untuk setiap laptop
+        $laptop['logs'] = $this->laptopLog->where('laptop_id', $laptop['id'])
+                                          ->orderBy('created_at', 'DESC')
+                                          ->findAll();
+        
+        // Hitung registrasi ke berapa untuk nomor seri ini
+        $riwayat = $this->laptop->where('nomor_seri', $laptop['nomor_seri'])
+                                ->orderBy('created_at', 'ASC')
+                                ->findAll();
+        
+        // Cari posisi laptop ini dalam riwayat
+        $registrasiKe = 1;
+        foreach ($riwayat as $index => $item) {
+            if ($item['id'] == $laptop['id']) {
+                $registrasiKe = $index + 1;
+                break;
+            }
+        }
+        
+        $laptop['registrasi_ke_sekarang'] = $registrasiKe;
+        $laptop['total_registrasi'] = count($riwayat);
+        $laptop['registrasi_selanjutnya'] = count($riwayat) + 1;
+    }
+
+    // ========== GENERATE NO AGENDA BARANG ==========
+    $db = \Config\Database::connect();
+
+    $q = $db->query("
+        SELECT IFNULL(MAX(CAST(SUBSTRING(no_agenda,4) AS UNSIGNED)),0) + 1 AS next
+        FROM barang
+        WHERE no_agenda LIKE 'M-%'
+          AND YEAR(tanggal) = YEAR(CURDATE())
+    ");
+    $noAgenda = 'M-' . str_pad($q->getRow()->next, 4, '0', STR_PAD_LEFT);
+
+    $d = $db->query("
+        SELECT IFNULL(MAX(CAST(SUBSTRING(no_agenda,4) AS UNSIGNED)),0) + 1 AS next
+        FROM barang
+        WHERE no_agenda LIKE 'K-%'
+          AND YEAR(tanggal) = YEAR(CURDATE())
+    ");
+    $noAgendaKeluar = 'K-' . str_pad($d->getRow()->next, 4, '0', STR_PAD_LEFT);
+
+    // ========== DATA UNTUK VIEW ==========
+    $data = [
+        'barangs'         => $barangs,
+        'laptops'         => $laptops,
+        'keyword'         => $keyword,
+        'keywordLaptop'   => $keywordLaptop,
+        'statusLaptop'    => $statusLaptop,
+        'noAgenda'        => $noAgenda,
+        'noAgendaKeluar'  => $noAgendaKeluar,
+        'tanggal'         => date('Y-m-d H:i:s')
+    ];
+
+    return view('registrasi/index', $data);
+}
+
+    // ============================================
+    // FUNGSI BARANG (REGISTRASI)
+    // ============================================
+
+    /**
+     * STORE BARANG (Registrasi Barang Masuk/Keluar)
+     */
     public function store()
     {
         $isPartialChecked = $this->request->getPost('is_partial') ? true : false;
@@ -233,6 +277,9 @@ class Barang extends BaseController
         return redirect()->to('/registrasi')->with('success', 'Registrasi berhasil');
     }
 
+    /**
+     * EDIT BARANG
+     */
     public function edit($id)
     {
         return view('registrasi/edit', [
@@ -240,6 +287,9 @@ class Barang extends BaseController
         ]);
     }
 
+    /**
+     * UPDATE BARANG
+     */
     public function update($id)
     {
         $this->barang->update($id, [
@@ -266,6 +316,9 @@ class Barang extends BaseController
         return redirect()->to('/registrasi')->with('success', 'Data diperbarui');
     }
 
+    /**
+     * SELESAIKAN BARANG
+     */
     public function selesai($id)
     {
         $barang = $this->barang->find($id);
@@ -391,6 +444,9 @@ class Barang extends BaseController
         return redirect()->to('/registrasi')->with('success', $pesan);
     }
 
+    /**
+     * PROSES MASUK BARANG
+     */
     public function prosesMasuk($id)
     {
         $barang = $this->barang->find($id);
@@ -449,6 +505,9 @@ class Barang extends BaseController
             ->with('success', 'Barang berhasil masuk');
     }
 
+    /**
+     * PROSES KELUAR BARANG
+     */
     public function prosesKeluar($id)
     {
         $barang = $this->barang->find($id);
@@ -500,6 +559,9 @@ class Barang extends BaseController
             ->with('success', 'Barang berhasil keluar');
     }
 
+    /**
+     * PROSES KELUAR LANGSUNG
+     */
     public function prosesKeluarLangsung($id)
     {
         $barang = $this->barang->find($id);
@@ -536,6 +598,9 @@ class Barang extends BaseController
             ->with('success', 'Barang berhasil keluar');
     }
 
+    /**
+     * MASUK LANGSUNG
+     */
     public function masukLangsung($id)
     {
         $barang = $this->barang->find($id);
@@ -572,6 +637,9 @@ class Barang extends BaseController
             ->with('success', 'Barang berhasil masuk');
     }
 
+    /**
+     * PROSES KEMBALI
+     */
     public function prosesKembali($id)
     {
         $barang = $this->barang->find($id);
@@ -629,6 +697,9 @@ class Barang extends BaseController
             ->with('success', 'Barang berhasil kembali');
     }
 
+    /**
+     * KEMBALI LANGSUNG
+     */
     public function kembaliLangsung($id)
     {
         $barang = $this->barang->find($id);
@@ -671,7 +742,261 @@ class Barang extends BaseController
             ->with('success', 'Barang berhasil kembali');
     }
 
-    public function laptop()
+    // ============================================
+    // FUNGSI LAPTOP
+    // ============================================
+
+    /**
+     * STORE LAPTOP - dengan nomor registrasi otomatis
+     */
+    /**
+ * STORE LAPTOP - dengan nomor registrasi otomatis
+ */
+public function storeLaptop()
+{
+    $nomorSeri = $this->request->getPost('nomor_seri');
+    $jenis = $this->request->getPost('jenis');
+    
+    // Validasi nomor seri - cek apakah sudah ada di database
+    $existing = $this->laptop->where('nomor_seri', $nomorSeri)->first();
+    if ($existing) {
+        return redirect()->back()->withInput()->with('error', 'Nomor Seri ' . $nomorSeri . ' sudah terdaftar! Setiap laptop harus memiliki nomor seri unik.');
+    }
+
+    // Validasi input lainnya
+    $rules = [
+        'jenis'           => 'required|in_list[Pegawai,Non Pegawai]',
+        'nama_pengguna'   => 'required|min_length[3]|max_length[255]',
+        'nomor_id_card'   => 'required|min_length[3]|max_length[50]|is_unique[laptop.nomor_id_card]',
+        'instansi_divisi' => 'required|max_length[255]',
+        'merek'           => 'required|max_length[100]',
+        'nomor_seri'      => 'required|max_length[100]', // Hapus is_unique karena kita validasi manual
+        'berlaku_sampai'  => 'required|valid_date'
+    ];
+
+    if (!$this->validate($rules)) {
+        return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+    }
+
+    // Generate nomor registrasi otomatis
+    $noRegistrasi = $this->generateNoRegistrasi($jenis);
+
+    $data = [
+        'no_registrasi'    => $noRegistrasi,
+        'jenis'            => $jenis,
+        'nama_pengguna'    => $this->request->getPost('nama_pengguna'),
+        'nomor_id_card'    => $this->request->getPost('nomor_id_card'),
+        'instansi_divisi'  => $this->request->getPost('instansi_divisi'),
+        'merek'            => $this->request->getPost('merek'),
+        'tipe_laptop'      => $this->request->getPost('tipe_laptop'),
+        'nomor_seri'       => $nomorSeri,
+        'berlaku_sampai'   => $this->request->getPost('berlaku_sampai'),
+        'spesifikasi_lain' => $this->request->getPost('spesifikasi_lain'),
+        'status'           => 'Masih Berlaku',
+        'keterangan'       => 'Registrasi baru',
+        'registrasi_ke'    => 1
+    ];
+
+    $id = $this->laptop->insert($data);
+
+    if (!$id) {
+        return redirect()->back()->withInput()->with('error', 'Gagal menyimpan data: ' . $this->laptop->errors());
+    }
+
+    // Catat log registrasi
+    $this->laptopLog->insert([
+        'laptop_id'     => $id,
+        'no_registrasi' => $noRegistrasi,
+        'registrasi_ke' => 1,
+        'aksi'          => 'Registrasi',
+        'keterangan'    => 'Registrasi laptop baru - ' . $data['merek'] . ' ' . $data['tipe_laptop'] . ' (Jenis: ' . $jenis . ')',
+        'created_at'    => date('Y-m-d H:i:s')
+    ]);
+
+    return redirect()->to('/registrasi')->with('success', 'Laptop berhasil diregistrasi. Nomor Registrasi: ' . $noRegistrasi . ' (Registrasi ke-1)');
+}
+
+    /**
+ * UPDATE LAPTOP
+ */
+public function updateLaptop($id)
+{
+    $laptop = $this->laptop->find($id);
+    
+    if (!$laptop) {
+        return redirect()->to('/registrasi')->with('error', 'Laptop tidak ditemukan');
+    }
+
+    $nomorSeri = $this->request->getPost('nomor_seri');
+    $jenis = $this->request->getPost('jenis');
+    $nomorIdCard = $this->request->getPost('nomor_id_card');
+    
+    // Validasi nomor seri unik (kecuali untuk laptop ini sendiri)
+    $existing = $this->laptop->where('nomor_seri', $nomorSeri)->where('id !=', $id)->first();
+    if ($existing) {
+        return redirect()->back()->withInput()->with('error', 'Nomor Seri ' . $nomorSeri . ' sudah digunakan laptop lain!');
+    }
+
+    // Validasi nomor ID card unik (kecuali untuk laptop ini sendiri)
+    $existingIdCard = $this->laptop->where('nomor_id_card', $nomorIdCard)->where('id !=', $id)->first();
+    if ($existingIdCard) {
+        return redirect()->back()->withInput()->with('error', 'Nomor ID Card ' . $nomorIdCard . ' sudah digunakan laptop lain!');
+    }
+
+    $rules = [
+        'jenis'           => 'required|in_list[Pegawai,Non Pegawai]',
+        'nama_pengguna'   => 'required|min_length[3]|max_length[255]',
+        'nomor_id_card'   => 'required|min_length[3]|max_length[50]',
+        'instansi_divisi' => 'required|max_length[255]',
+        'merek'           => 'required|max_length[100]',
+        'nomor_seri'      => 'required|max_length[100]',
+        'berlaku_sampai'  => 'required|valid_date'
+    ];
+
+    if (!$this->validate($rules)) {
+        return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+    }
+
+    $data = [
+        'jenis'            => $jenis,
+        'nama_pengguna'    => $this->request->getPost('nama_pengguna'),
+        'nomor_id_card'    => $nomorIdCard,
+        'instansi_divisi'  => $this->request->getPost('instansi_divisi'),
+        'merek'            => $this->request->getPost('merek'),
+        'tipe_laptop'      => $this->request->getPost('tipe_laptop'),
+        'nomor_seri'       => $nomorSeri,
+        'berlaku_sampai'   => $this->request->getPost('berlaku_sampai'),
+        'spesifikasi_lain' => $this->request->getPost('spesifikasi_lain'),
+        'status'           => $this->request->getPost('status') ?: 'Masih Berlaku',
+        'keterangan'       => $this->request->getPost('keterangan')
+    ];
+
+    $updated = $this->laptop->update($id, $data);
+    
+    if (!$updated) {
+        return redirect()->back()->withInput()->with('error', 'Gagal mengupdate data: ' . $this->laptop->errors());
+    }
+
+    // Catat log perubahan
+    $this->laptopLog->insert([
+        'laptop_id'     => $id,
+        'no_registrasi' => $laptop['no_registrasi'],
+        'registrasi_ke' => $laptop['registrasi_ke'] ?? 1,
+        'aksi'          => 'Update',
+        'keterangan'    => 'Data laptop diperbarui - Jenis: ' . $jenis,
+        'created_at'    => date('Y-m-d H:i:s')
+    ]);
+
+    return redirect()->to('/registrasi')->with('success', 'Data laptop berhasil diperbarui');
+}
+/**
+ * Cek apakah nomor seri sudah ada (untuk AJAX)
+ */
+public function cekNomorSeri()
+{
+    $nomorSeri = $this->request->getGet('nomor_seri');
+    $id = $this->request->getGet('id'); // untuk edit, kecualikan ID ini
+    
+    $builder = $this->laptop->where('nomor_seri', $nomorSeri);
+    
+    if ($id) {
+        $builder->where('id !=', $id);
+    }
+    
+    $exists = $builder->first();
+    
+    return $this->response->setJSON([
+        'exists' => $exists ? true : false,
+        'message' => $exists ? 'Nomor seri sudah digunakan' : 'Nomor seri tersedia'
+    ]);
+}
+/**
+ * PERPANJANG LAPTOP - dengan nomor registrasi baru
+ */
+/**
+ * PERPANJANG LAPTOP - menyimpan riwayat dalam JSON
+ */
+public function perpanjangLaptop()
+{
+    $id = $this->request->getPost('laptop_id');
+    $berlakuSampaiBaru = $this->request->getPost('berlaku_sampai_baru');
+    $keterangan = $this->request->getPost('keterangan');
+    
+    $laptop = $this->laptop->find($id);
+    
+    if (!$laptop) {
+        return redirect()->back()->with('error', 'Data laptop tidak ditemukan');
+    }
+    
+    // Ambil riwayat perpanjangan yang sudah ada
+    $riwayat = json_decode($laptop['riwayat_perpanjangan'] ?? '[]', true);
+    
+    // Tambahkan riwayat baru
+    $riwayat[] = [
+        'no_registrasi' => $laptop['no_registrasi'],
+        'tanggal_perpanjangan' => date('Y-m-d H:i:s'),
+        'berlaku_sampai_lama' => $laptop['berlaku_sampai'],
+        'berlaku_sampai_baru' => $berlakuSampaiBaru,
+        'keterangan' => $keterangan,
+        'registrasi_ke' => count($riwayat) + 1
+    ];
+    
+    // Generate nomor registrasi baru
+    $noRegistrasiBaru = $this->generateNoRegistrasi($laptop['jenis']);
+    
+    // Update laptop yang sama (bukan buat baru)
+    $this->laptop->update($id, [
+        'no_registrasi' => $noRegistrasiBaru,
+        'berlaku_sampai' => $berlakuSampaiBaru,
+        'riwayat_perpanjangan' => json_encode($riwayat),
+        'keterangan' => 'Diperpanjang - ' . $keterangan
+    ]);
+    
+    // Catat log
+    $this->laptopLog->insert([
+        'laptop_id' => $id,
+        'no_registrasi' => $noRegistrasiBaru,
+        'registrasi_ke' => count($riwayat),
+        'aksi' => 'Perpanjangan',
+        'keterangan' => $keterangan ?: 'Perpanjangan ke-' . count($riwayat),
+        'created_at' => date('Y-m-d H:i:s')
+    ]);
+    
+    return redirect()->back()->with('success', 'Masa berlaku laptop berhasil diperpanjang. Nomor Registrasi baru: ' . $noRegistrasiBaru);
+}
+    /**
+     * DETAIL LAPTOP dengan logs dan riwayat perpanjangan
+     */
+    public function detailLaptop($id)
+    {
+        $laptop = $this->laptop->find($id);
+        
+        if (!$laptop) {
+            return redirect()->to('/registrasi')->with('error', 'Laptop tidak ditemukan');
+        }
+
+        // Ambil logs
+        $logs = $this->laptopLog->where('laptop_id', $id)
+                                ->orderBy('created_at', 'DESC')
+                                ->findAll();
+        
+        // Ambil riwayat semua registrasi berdasarkan nomor seri
+        $riwayatRegistrasi = $this->laptop
+            ->where('nomor_seri', $laptop['nomor_seri'])
+            ->orderBy('created_at', 'ASC')
+            ->findAll();
+
+        return view('laptop/detail', [
+            'laptop' => $laptop,
+            'logs' => $logs,
+            'riwayatRegistrasi' => $riwayatRegistrasi
+        ]);
+    }
+
+    /**
+     * SEARCH LAPTOP - AJAX
+     */
+    public function searchLaptop()
     {
         $keyword = $this->request->getGet('keyword');
         $status = $this->request->getGet('status');
@@ -687,157 +1012,32 @@ class Barang extends BaseController
                 ->orLike('tipe_laptop', $keyword)
                 ->orLike('nomor_seri', $keyword)
                 ->orLike('spesifikasi_lain', $keyword)
+                ->orLike('no_registrasi', $keyword)
                 ->groupEnd();
         }
 
-        if ($status && $status != 'Semua') {
+        if ($status && $status != 'Semua' && $status != '') {
             $builder = $builder->where('status', $status);
         }
 
-        $data['laptops'] = $builder->orderBy('id', 'DESC')->findAll();
-        $data['keyword'] = $keyword;
-        $data['status'] = $status;
-        $data['status_options'] = ['Masih Berlaku', 'Tidak Berlaku'];
+        $laptops = $builder->orderBy('created_at', 'DESC')->findAll();
 
-        return view('registrasi/index', $data);
-    }
-public function searchLaptop()
-{
-    $keyword = $this->request->getGet('keyword');
-    $status = $this->request->getGet('status');
-
-    $builder = $this->laptop;
-
-    if ($keyword) {
-        $builder = $builder->groupStart()
-            ->like('nama_pengguna', $keyword)
-            ->orLike('nomor_id_card', $keyword)
-            ->orLike('instansi_divisi', $keyword)
-            ->orLike('merek', $keyword)
-            ->orLike('tipe_laptop', $keyword)
-            ->orLike('nomor_seri', $keyword)
-            ->orLike('spesifikasi_lain', $keyword)
-            ->groupEnd();
-    }
-
-    if ($status && $status != 'Semua' && $status != '') {
-        $builder = $builder->where('status', $status);
-    }
-
-    $data['laptops'] = $builder->orderBy('id', 'DESC')->findAll();
-
-    // Kembalikan hanya partial view untuk tabel
-    return view('laptop/table', $data);
-}
-    public function storeLaptop()
-    {
-        $nomorSeri = $this->request->getPost('nomor_seri');
-        $existing = $this->laptop->where('nomor_seri', $nomorSeri)->first();
-        if ($existing) {
-            return redirect()->back()->withInput()->with('error', 'Nomor Seri sudah terdaftar! Setiap laptop harus memiliki nomor seri unik.');
+        // Ambil logs untuk setiap laptop
+        foreach ($laptops as &$laptop) {
+            $laptop['logs'] = $this->laptopLog->where('laptop_id', $laptop['id'])
+                                              ->orderBy('created_at', 'DESC')
+                                              ->findAll();
         }
 
-        $rules = [
-            'nama_pengguna'   => 'required|min_length[3]|max_length[255]',
-            'nomor_id_card'   => 'required|min_length[3]|max_length[50]|is_unique[laptop.nomor_id_card]',
-            'instansi_divisi' => 'required|max_length[255]',
-            'merek'           => 'required|max_length[100]',
-            'nomor_seri'      => 'required|max_length[100]|is_unique[laptop.nomor_seri]',
-            'berlaku_sampai'  => 'required|valid_date'
-        ];
+        $data['laptops'] = $laptops;
 
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-
-        $data = [
-            'nama_pengguna'    => $this->request->getPost('nama_pengguna'),
-            'nomor_id_card'    => $this->request->getPost('nomor_id_card'),
-            'instansi_divisi'  => $this->request->getPost('instansi_divisi'),
-            'merek'            => $this->request->getPost('merek'),
-            'tipe_laptop'      => $this->request->getPost('tipe_laptop'),
-            'nomor_seri'       => $this->request->getPost('nomor_seri'),
-            'berlaku_sampai'   => $this->request->getPost('berlaku_sampai'),
-            'spesifikasi_lain' => $this->request->getPost('spesifikasi_lain'),
-            'status'           => 'Masih Berlaku',
-            'keterangan'       => 'Registrasi baru'
-        ];
-
-        $id = $this->laptop->insert($data);
-
-        $this->laptopLog->insert([
-            'laptop_id'   => $id,
-            'aksi'        => 'Registrasi',
-            'keterangan'  => 'Registrasi laptop baru - ' . $data['merek'] . ' ' . $data['tipe_laptop'],
-            'created_at'  => date('Y-m-d H:i:s')
-        ]);
-
-        return redirect()->to('/registrasi')->with('success', 'Laptop berhasil diregistrasi');
+        // Kembalikan hanya partial view untuk tabel
+        return view('laptop/table', $data);
     }
 
-    public function editLaptop($id)
-    {
-        $laptop = $this->laptop->find($id);
-        
-        if (!$laptop) {
-            return redirect()->to('/registrasi')->with('error', 'Laptop tidak ditemukan');
-        }
-
-        return view('laptop/edit', ['laptop' => $laptop]);
-    }
-
-    public function updateLaptop($id)
-    {
-        $laptop = $this->laptop->find($id);
-        
-        if (!$laptop) {
-            return redirect()->to('/registrasi')->with('error', 'Laptop tidak ditemukan');
-        }
-
-        $nomorSeri = $this->request->getPost('nomor_seri');
-        $existing = $this->laptop->where('nomor_seri', $nomorSeri)->where('id !=', $id)->first();
-        if ($existing) {
-            return redirect()->back()->withInput()->with('error', 'Nomor Seri sudah digunakan laptop lain!');
-        }
-
-        $rules = [
-            'nama_pengguna'   => 'required|min_length[3]|max_length[255]',
-            'nomor_id_card'   => "required|min_length[3]|max_length[50]|is_unique[laptop.nomor_id_card,id,{$id}]",
-            'instansi_divisi' => 'required|max_length[255]',
-            'merek'           => 'required|max_length[100]',
-            'nomor_seri'      => "required|max_length[100]",
-            'berlaku_sampai'  => 'required|valid_date'
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-
-        $data = [
-            'nama_pengguna'    => $this->request->getPost('nama_pengguna'),
-            'nomor_id_card'    => $this->request->getPost('nomor_id_card'),
-            'instansi_divisi'  => $this->request->getPost('instansi_divisi'),
-            'merek'            => $this->request->getPost('merek'),
-            'tipe_laptop'      => $this->request->getPost('tipe_laptop'),
-            'nomor_seri'       => $this->request->getPost('nomor_seri'),
-            'berlaku_sampai'   => $this->request->getPost('berlaku_sampai'),
-            'spesifikasi_lain' => $this->request->getPost('spesifikasi_lain'),
-            'status'           => $this->request->getPost('status') ?: 'Masih Berlaku',
-            'keterangan'       => $this->request->getPost('keterangan')
-        ];
-
-        $this->laptop->update($id, $data);
-
-        $this->laptopLog->insert([
-            'laptop_id'   => $id,
-            'aksi'        => 'Update',
-            'keterangan'  => 'Data laptop diperbarui',
-            'created_at'  => date('Y-m-d H:i:s')
-        ]);
-
-        return redirect()->to('/registrasi')->with('success', 'Data laptop berhasil diperbarui');
-    }
-
+    /**
+     * DELETE LAPTOP
+     */
     public function deleteLaptop($id)
     {
         $laptop = $this->laptop->find($id);
@@ -846,11 +1046,14 @@ public function searchLaptop()
             return redirect()->to('/registrasi')->with('error', 'Laptop tidak ditemukan');
         }
 
+        // Catat log sebelum dihapus
         $this->laptopLog->insert([
-            'laptop_id'   => $id,
-            'aksi'        => 'Hapus',
-            'keterangan'  => 'Laptop dihapus dari sistem',
-            'created_at'  => date('Y-m-d H:i:s')
+            'laptop_id'     => $id,
+            'no_registrasi' => $laptop['no_registrasi'],
+            'registrasi_ke' => $laptop['registrasi_ke'] ?? 1,
+            'aksi'          => 'Hapus',
+            'keterangan'    => 'Laptop dihapus dari sistem',
+            'created_at'    => date('Y-m-d H:i:s')
         ]);
 
         $this->laptop->delete($id);
@@ -858,6 +1061,9 @@ public function searchLaptop()
         return redirect()->to('/registrasi')->with('success', 'Laptop berhasil dihapus');
     }
 
+    /**
+     * CHANGE LAPTOP STATUS
+     */
     public function changeLaptopStatus($id)
     {
         $laptop = $this->laptop->find($id);
@@ -875,135 +1081,166 @@ public function searchLaptop()
         ]);
 
         $this->laptopLog->insert([
-            'laptop_id'   => $id,
-            'aksi'        => 'Ubah Status',
-            'keterangan'  => "Status diubah menjadi {$status}" . ($keterangan ? ": {$keterangan}" : ''),
-            'created_at'  => date('Y-m-d H:i:s')
+            'laptop_id'     => $id,
+            'no_registrasi' => $laptop['no_registrasi'],
+            'registrasi_ke' => $laptop['registrasi_ke'] ?? 1,
+            'aksi'          => 'Ubah Status',
+            'keterangan'    => "Status diubah menjadi {$status}" . ($keterangan ? ": {$keterangan}" : ''),
+            'created_at'    => date('Y-m-d H:i:s')
         ]);
 
         return redirect()->to('/registrasi')->with('success', 'Status laptop berhasil diubah');
     }
 
-    public function detailLaptop($id)
-    {
-        $laptop = $this->laptop->find($id);
-        
-        if (!$laptop) {
-            return redirect()->to('/registrasi')->with('error', 'Laptop tidak ditemukan');
-        }
-
-        // Ambil logs dari LaptopLogModel
-        $logs = $this->laptopLog->where('laptop_id', $id)->orderBy('created_at', 'DESC')->findAll();
-
-        return view('laptop/detail', [
-            'laptop' => $laptop,
-            'logs'   => $logs
-        ]);
-    }
-
+    /**
+     * EXPORT LAPTOP TO EXCEL
+     */
     public function exportLaptop()
-{
-    $laptops = $this->laptop->orderBy('id', 'DESC')->findAll();
-    $totalData = count($laptops);
+    {
+        $laptops = $this->laptop->orderBy('created_at', 'DESC')->findAll();
+        $totalData = count($laptops);
 
-    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-    
-    $sheet->setTitle('Data Laptop');
-    
-    $sheet->setCellValue('A1', 'NO');
-    $sheet->setCellValue('B1', 'NAMA PENGGUNA');
-    $sheet->setCellValue('C1', 'NOMOR ID CARD');
-    $sheet->setCellValue('D1', 'INSTANSI/DIVISI');
-    $sheet->setCellValue('E1', 'MEREK');
-    $sheet->setCellValue('F1', 'TIPE');
-    $sheet->setCellValue('G1', 'NOMOR SERI');
-    $sheet->setCellValue('H1', 'BERLAKU SAMPAI');
-    $sheet->setCellValue('I1', 'SPESIFIKASI');
-    $sheet->setCellValue('J1', 'STATUS');
-    $sheet->setCellValue('K1', 'KETERANGAN');
-    
-    $sheet->getStyle('A1:K1')->getFont()->setBold(true);
-    $sheet->getStyle('A1:K1')->getFill()
-        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-        ->getStartColor()->setARGB('FF0066B3'); // Biru Pindad
-    $sheet->getStyle('A1:K1')->getFont()->getColor()->setARGB('FFFFFFFF');
-    
-    $row = 2;
-    foreach ($laptops as $i => $l) {
-        $sheet->setCellValue('A' . $row, $i + 1);
-        $sheet->setCellValue('B' . $row, $l['nama_pengguna']);
-        $sheet->setCellValue('C' . $row, $l['nomor_id_card']);
-        $sheet->setCellValue('D' . $row, $l['instansi_divisi']);
-        $sheet->setCellValue('E' . $row, $l['merek']);
-        $sheet->setCellValue('F' . $row, $l['tipe_laptop']);
-        $sheet->setCellValue('G' . $row, $l['nomor_seri']);
-        $sheet->setCellValue('H' . $row, date('d-m-Y', strtotime($l['berlaku_sampai'])));
-        $sheet->setCellValue('I' . $row, $l['spesifikasi_lain']);
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
         
-        $sheet->setCellValue('J' . $row, $l['status']);
-        if ($l['status'] == 'Masih Berlaku') {
-            $sheet->getStyle('J' . $row)->getFont()->getColor()->setARGB('FF008000'); // Hijau
-        } else {
-            $sheet->getStyle('J' . $row)->getFont()->getColor()->setARGB('FFFF0000'); // Merah
+        $sheet->setTitle('Data Laptop');
+        
+        // Header dengan REGISTRASI KE
+        $headers = [
+            'NO', 
+            'NO. REGISTRASI', 
+            'REGISTRASI KE', 
+            'JENIS', 
+            'NAMA PENGGUNA', 
+            'NOMOR ID CARD', 
+            'INSTANSI/DIVISI', 
+            'MEREK', 
+            'TIPE', 
+            'NOMOR SERI', 
+            'BERLAKU SAMPAI', 
+            'SPESIFIKASI', 
+            'STATUS', 
+            'KETERANGAN', 
+            'TANGGAL REGISTRASI'
+        ];
+        
+        foreach ($headers as $index => $header) {
+            $col = chr(65 + $index); // A, B, C, ...
+            $sheet->setCellValue($col . '1', $header);
         }
         
-        $sheet->setCellValue('K' . $row, $l['keterangan']);
-        $row++;
-    }
-    
-    $lastRow = $row;
-    
-    $sheet->setCellValue('A' . $lastRow, '');
-    $lastRow++;
-    
-    $sheet->setCellValue('A' . $lastRow, 'TOTAL DATA:');
-    $sheet->setCellValue('B' . $lastRow, $totalData . ' Laptop');
-    $sheet->getStyle('A' . $lastRow . ':B' . $lastRow)->getFont()->setBold(true);
-    $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FF0066B3');
-    
-    $lastRow++;
-    $aktif = $this->laptop->where('status', 'Masih Berlaku')->countAllResults();
-    $nonaktif = $this->laptop->where('status', 'Tidak Berlaku')->countAllResults();
-    
-    $sheet->setCellValue('A' . $lastRow, 'Status Masih Berlaku:');
-    $sheet->setCellValue('B' . $lastRow, $aktif . ' Laptop');
-    $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FF008000');
-    
-    $lastRow++;
-    $sheet->setCellValue('A' . $lastRow, 'Status Tidak Berlaku:');
-    $sheet->setCellValue('B' . $lastRow, $nonaktif . ' Laptop');
-    $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FFFF0000');
-    
-    $lastRow++;
-    $sheet->setCellValue('A' . $lastRow, 'Tanggal Export:');
-    $sheet->setCellValue('B' . $lastRow, date('d-m-Y H:i:s'));
-    $sheet->getStyle('A' . $lastRow)->getFont()->setItalic(true);
-    
-    foreach (range('A', 'K') as $column) {
-        $sheet->getColumnDimension($column)->setAutoSize(true);
-    }
-    
-    $styleArray = [
-        'borders' => [
-            'allBorders' => [
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+        // Style header
+        $sheet->getStyle('A1:O1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:O1')->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FF0066B3');
+        $sheet->getStyle('A1:O1')->getFont()->getColor()->setARGB('FFFFFFFF');
+        
+        // Data
+        $row = 2;
+        foreach ($laptops as $i => $l) {
+            $sheet->setCellValue('A' . $row, $i + 1);
+            $sheet->setCellValue('B' . $row, $l['no_registrasi']);
+            $sheet->setCellValue('C' . $row, $l['registrasi_ke'] ?? 1);
+            $sheet->setCellValue('D' . $row, $l['jenis'] ?? '-');
+            $sheet->setCellValue('E' . $row, $l['nama_pengguna']);
+            $sheet->setCellValue('F' . $row, $l['nomor_id_card']);
+            $sheet->setCellValue('G' . $row, $l['instansi_divisi']);
+            $sheet->setCellValue('H' . $row, $l['merek']);
+            $sheet->setCellValue('I' . $row, $l['tipe_laptop']);
+            $sheet->setCellValue('J' . $row, $l['nomor_seri']);
+            $sheet->setCellValue('K' . $row, date('d-m-Y', strtotime($l['berlaku_sampai'])));
+            $sheet->setCellValue('L' . $row, $l['spesifikasi_lain']);
+            $sheet->setCellValue('M' . $row, $l['status']);
+            $sheet->setCellValue('N' . $row, $l['keterangan']);
+            $sheet->setCellValue('O' . $row, date('d-m-Y H:i', strtotime($l['created_at'])));
+            
+            // Warna status
+            if ($l['status'] == 'Masih Berlaku') {
+                $sheet->getStyle('M' . $row)->getFont()->getColor()->setARGB('FF008000');
+            } else if ($l['status'] == 'Tidak Berlaku') {
+                $sheet->getStyle('M' . $row)->getFont()->getColor()->setARGB('FFFF0000');
+            } else if ($l['status'] == 'Diperpanjang') {
+                $sheet->getStyle('M' . $row)->getFont()->getColor()->setARGB('FF0000FF');
+            }
+            
+            $row++;
+        }
+        
+        // Statistik
+        $lastRow = $row + 2;
+        $sheet->setCellValue('A' . $lastRow, 'STATISTIK DATA:');
+        $sheet->getStyle('A' . $lastRow)->getFont()->setBold(true);
+        
+        $lastRow++;
+        $sheet->setCellValue('A' . $lastRow, 'Total Laptop:');
+        $sheet->setCellValue('B' . $lastRow, $totalData);
+        
+        $lastRow++;
+        $pegawai = $this->laptop->where('jenis', 'Pegawai')->countAllResults();
+        $nonPegawai = $this->laptop->where('jenis', 'Non Pegawai')->countAllResults();
+        $sheet->setCellValue('A' . $lastRow, 'Jenis Pegawai:');
+        $sheet->setCellValue('B' . $lastRow, $pegawai);
+        
+        $lastRow++;
+        $sheet->setCellValue('A' . $lastRow, 'Jenis Non Pegawai:');
+        $sheet->setCellValue('B' . $lastRow, $nonPegawai);
+        
+        $lastRow++;
+        $aktif = $this->laptop->where('status', 'Masih Berlaku')->countAllResults();
+        $nonaktif = $this->laptop->where('status', 'Tidak Berlaku')->countAllResults();
+        $diperpanjang = $this->laptop->where('status', 'Diperpanjang')->countAllResults();
+        $sheet->setCellValue('A' . $lastRow, 'Status Masih Berlaku:');
+        $sheet->setCellValue('B' . $lastRow, $aktif);
+        $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FF008000');
+        
+        $lastRow++;
+        $sheet->setCellValue('A' . $lastRow, 'Status Tidak Berlaku:');
+        $sheet->setCellValue('B' . $lastRow, $nonaktif);
+        $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FFFF0000');
+        
+        $lastRow++;
+        $sheet->setCellValue('A' . $lastRow, 'Status Diperpanjang:');
+        $sheet->setCellValue('B' . $lastRow, $diperpanjang);
+        $sheet->getStyle('A' . $lastRow)->getFont()->getColor()->setARGB('FF0000FF');
+        
+        $lastRow++;
+        $sheet->setCellValue('A' . $lastRow, 'Tanggal Export:');
+        $sheet->setCellValue('B' . $lastRow, date('d-m-Y H:i:s'));
+        
+        // Auto size columns
+        foreach (range('A', 'O') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+        
+        // Border
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
             ],
-        ],
-    ];
-    $sheet->getStyle('A1:K' . ($row - 1))->applyFromArray($styleArray);
-    
-    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-    $filename = 'data_laptop_' . date('Ymd_His') . '.xlsx';
-    
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="' . $filename . '"');
-    header('Cache-Control: max-age=0');
-    
-    $writer->save('php://output');
-    exit;
-}
+        ];
+        $sheet->getStyle('A1:O' . ($row - 1))->applyFromArray($styleArray);
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'data_laptop_' . date('Ymd_His') . '.xlsx';
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer->save('php://output');
+        exit;
+    }
 
+    // ============================================
+    // FUNGSI LOGS
+    // ============================================
+
+    /**
+     * LOGS
+     */
     public function logs()
     {
         $keyword = $this->request->getGet('keyword');
@@ -1014,7 +1251,7 @@ public function searchLaptop()
 
         $builder = $this->barangLog->select('barang_logs.*, 
                                       barang.nama_barang, barang.no_agenda, barang.satuan as barang_satuan,
-                                      laptop.nama_pengguna, laptop.merek, laptop.tipe_laptop, laptop.nomor_seri')
+                                      laptop.nama_pengguna, laptop.merek, laptop.tipe_laptop, laptop.nomor_seri, laptop.no_registrasi, laptop.jenis, laptop.registrasi_ke')
                             ->join('barang', 'barang.id = barang_logs.barang_id', 'left')
                             ->join('laptop', 'laptop.id = barang_logs.laptop_id', 'left');
 
@@ -1025,6 +1262,7 @@ public function searchLaptop()
                 ->orLike('laptop.nama_pengguna', $keyword)
                 ->orLike('laptop.merek', $keyword)
                 ->orLike('laptop.nomor_seri', $keyword)
+                ->orLike('laptop.no_registrasi', $keyword)
                 ->orLike('barang_logs.keterangan', $keyword)
                 ->groupEnd();
         }
@@ -1061,6 +1299,9 @@ public function searchLaptop()
         return view('logs/index', $data);
     }
 
+    /**
+     * EXPORT LOGS TO CSV
+     */
     public function exportLogs()
     {
         $startDate = $this->request->getGet('start_date') ?: date('Y-m-d', strtotime('-30 days'));
@@ -1068,7 +1309,7 @@ public function searchLaptop()
 
         $logs = $this->barangLog->select('barang_logs.*, 
                                    barang.nama_barang, barang.no_agenda,
-                                   laptop.nama_pengguna, laptop.merek, laptop.tipe_laptop, laptop.nomor_seri')
+                                   laptop.nama_pengguna, laptop.merek, laptop.tipe_laptop, laptop.nomor_seri, laptop.no_registrasi, laptop.jenis, laptop.registrasi_ke')
                          ->join('barang', 'barang.id = barang_logs.barang_id', 'left')
                          ->join('laptop', 'laptop.id = barang_logs.laptop_id', 'left')
                          ->where('barang_logs.created_at >=', $startDate . ' 00:00:00')
@@ -1082,22 +1323,26 @@ public function searchLaptop()
         $output = fopen('php://output', 'w');
         
         fputcsv($output, [
-            'No', 'Tanggal', 'Tipe', 'Item', 'Aksi', 
+            'No', 'Tanggal', 'Tipe', 'No Registrasi', 'Registrasi Ke', 'Item', 'Aksi', 
             'Jumlah', 'Sisa', 'Keterangan'
         ]);
 
         foreach ($logs as $i => $log) {
             $tipe = $log['barang_id'] ? 'Barang' : ($log['laptop_id'] ? 'Laptop' : '-');
+            $noRegistrasi = $log['laptop_id'] ? $log['no_registrasi'] : $log['no_agenda'];
+            $registrasiKe = $log['laptop_id'] ? ($log['registrasi_ke'] ?? 1) : '-';
             $item = $log['barang_id'] 
                 ? $log['nama_barang'] . ' (' . $log['no_agenda'] . ')'
                 : ($log['laptop_id'] 
-                    ? $log['nama_pengguna'] . ' - ' . $log['merek'] . ' ' . $log['tipe_laptop'] . ' (' . $log['nomor_seri'] . ')'
+                    ? $log['nama_pengguna'] . ' - ' . $log['merek'] . ' ' . $log['tipe_laptop'] . ' (' . $log['nomor_seri'] . ') - ' . $log['jenis']
                     : '-');
 
             fputcsv($output, [
                 $i + 1,
                 date('d/m/Y H:i:s', strtotime($log['created_at'])),
                 $tipe,
+                $noRegistrasi,
+                $registrasiKe,
                 $item,
                 $log['aksi'],
                 $log['jumlah'],
@@ -1110,22 +1355,83 @@ public function searchLaptop()
         exit;
     }
 
+    // ============================================
+    // FUNGSI DASHBOARD
+    // ============================================
+
+    /**
+     * DASHBOARD
+     */
     public function dashboard()
     {
-        $data['total_barang'] = $this->barang->countAll();
-        $data['total_laptop'] = $this->laptop->countAll();
-        $data['barang_selesai'] = $this->barang->where('status', 'Selesai')->countAllResults();
-        $data['barang_proses'] = $this->barang->where('status', 'Belum Selesai')->countAllResults();
-        $data['laptop_aktif'] = $this->laptop->where('status', 'Masih Berlaku')->countAllResults();
-        $data['laptop_nonaktif'] = $this->laptop->where('status', 'Tidak Berlaku')->countAllResults();
-        
-        $data['recent_logs'] = $this->barangLog->orderBy('created_at', 'DESC')->limit(10)->findAll();
-        
-        $data['estimasi_hari_ini'] = $this->barang
-            ->where('estimasi_kembali', date('Y-m-d'))
-            ->where('status !=', 'Selesai')
-            ->findAll();
+        $data = [
+            'total_barang' => $this->barang->countAll(),
+            'total_laptop' => $this->laptop->countAll(),
+            'barang_selesai' => $this->barang->where('status', 'Selesai')->countAllResults(),
+            'barang_proses' => $this->barang->where('status', 'Belum Selesai')->countAllResults(),
+            'laptop_aktif' => $this->laptop->where('status', 'Masih Berlaku')->countAllResults(),
+            'laptop_nonaktif' => $this->laptop->where('status', 'Tidak Berlaku')->countAllResults(),
+            'laptop_diperpanjang' => $this->laptop->where('status', 'Diperpanjang')->countAllResults(),
+            'laptop_pegawai' => $this->laptop->where('jenis', 'Pegawai')->countAllResults(),
+            'laptop_nonpegawai' => $this->laptop->where('jenis', 'Non Pegawai')->countAllResults(),
+            'recent_logs' => $this->barangLog->orderBy('created_at', 'DESC')->limit(10)->findAll(),
+            'estimasi_hari_ini' => $this->barang
+                ->where('estimasi_kembali', date('Y-m-d'))
+                ->where('status !=', 'Selesai')
+                ->findAll()
+        ];
 
         return view('dashboard', $data);
     }
+
+    // ============================================
+    // FUNGSI BANTUAN
+    // ============================================
+
+    /**
+     * Generate nomor registrasi otomatis
+     */
+    /**
+ * Generate nomor registrasi otomatis yang UNIK
+ */
+private function generateNoRegistrasi($jenis)
+{
+    $prefix = $jenis === 'Pegawai' ? 'PEG' : 'NPEG';
+    $tahun = date('Y');
+    $bulan = date('m');
+    $maxAttempts = 100; // Hindari infinite loop
+    $attempt = 0;
+    
+    do {
+        // Cari nomor urut terakhir untuk tahun dan bulan ini
+        $lastReg = $this->laptop
+            ->select('no_registrasi')
+            ->like('no_registrasi', $prefix . $tahun . $bulan, 'after')
+            ->orderBy('no_registrasi', 'DESC')
+            ->first();
+        
+        if ($lastReg) {
+            // Ambil 4 digit terakhir
+            $lastNumber = (int)substr($lastReg['no_registrasi'], -4);
+            $newNumber = str_pad($lastNumber + 1 + $attempt, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newNumber = str_pad(1 + $attempt, 4, '0', STR_PAD_LEFT);
+        }
+        
+        $noRegistrasi = $prefix . $tahun . $bulan . $newNumber;
+        
+        // Cek apakah nomor registrasi sudah ada
+        $exists = $this->laptop->where('no_registrasi', $noRegistrasi)->first();
+        $attempt++;
+        
+        if ($attempt >= $maxAttempts) {
+            // Fallback: tambahkan timestamp
+            $noRegistrasi = $prefix . $tahun . $bulan . date('His');
+            break;
+        }
+        
+    } while ($exists);
+    
+    return $noRegistrasi;
+}
 }

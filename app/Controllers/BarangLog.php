@@ -163,7 +163,7 @@ class BarangLog extends BaseController
     }
 
     /**
-     * LAPTOP LOGS SECTION - SESUAI STRUKTUR TABEL
+     * LAPTOP LOGS SECTION - DENGAN REGISTRASI_KE
      */
     private function getLaptopLogsData($db, $keyword, $startDate, $endDate, $laptopActiveTab)
     {
@@ -175,6 +175,9 @@ class BarangLog extends BaseController
         
         // Hitung total perpanjangan laptop
         $totalPerpanjanganLaptop = $this->laptopLog->where('aksi', 'Perpanjangan')->countAllResults();
+        
+        // Hitung total update laptop
+        $totalUpdateLaptop = $this->laptopLog->where('aksi', 'Update')->countAllResults();
         
         // Hitung laptop aktif (status Masih Berlaku)
         $laptopAktif = $this->laptop->where('status', 'Masih Berlaku')->countAllResults();
@@ -202,15 +205,25 @@ class BarangLog extends BaseController
             ->get()
             ->getResultArray();
 
+        // Query untuk LOGS UPDATE LAPTOP
+        $builderUpdate = $this->getLaptopBaseQuery($db, $keyword, $startDate, $endDate);
+        $builderUpdate->where('l.aksi', 'Update');
+        $logsUpdateLaptop = $builderUpdate
+            ->orderBy('l.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+
         $totalRowsLaptop = count($logsSemuaLaptop);
 
         return [
             'logsSemuaLaptop'        => $logsSemuaLaptop,
             'logsRegistrasiLaptop'   => $logsRegistrasiLaptop,
             'logsPerpanjanganLaptop' => $logsPerpanjanganLaptop,
+            'logsUpdateLaptop'       => $logsUpdateLaptop,
             'totalAllLaptop'         => $totalAllLaptop,
             'totalRegistrasiLaptop'  => $totalRegistrasiLaptop,
             'totalPerpanjanganLaptop'=> $totalPerpanjanganLaptop,
+            'totalUpdateLaptop'      => $totalUpdateLaptop,
             'laptopAktif'            => $laptopAktif,
             'totalRowsLaptop'        => $totalRowsLaptop
         ];
@@ -223,9 +236,12 @@ class BarangLog extends BaseController
                 'l.id AS log_id',
                 'l.created_at',
                 'l.aksi',
+                'l.no_registrasi',
+                'l.registrasi_ke',
                 'l.keterangan AS log_keterangan',
 
                 'lp.id AS laptop_id',
+                'lp.no_registrasi AS laptop_no_registrasi',
                 'lp.nama_pengguna',
                 'lp.nomor_id_card',
                 'lp.instansi_divisi',
@@ -235,7 +251,10 @@ class BarangLog extends BaseController
                 'lp.berlaku_sampai',
                 'lp.spesifikasi_lain',
                 'lp.status AS laptop_status',
-                'lp.keterangan AS laptop_keterangan'
+                'lp.jenis',
+                'lp.registrasi_ke AS laptop_registrasi_ke',
+                'lp.created_at AS laptop_created_at',
+                'lp.updated_at AS laptop_updated_at'
             ])
             ->join('laptop lp', 'lp.id = l.laptop_id');
 
@@ -254,6 +273,9 @@ class BarangLog extends BaseController
                 ->orLike('lp.merek', $keyword)
                 ->orLike('lp.tipe_laptop', $keyword)
                 ->orLike('lp.nomor_seri', $keyword)
+                ->orLike('lp.no_registrasi', $keyword)
+                ->orLike('l.no_registrasi', $keyword)
+                ->orLike('lp.jenis', $keyword)
                 ->orLike('l.keterangan', $keyword)
                 ->orLike('l.aksi', $keyword)
             ->groupEnd();
@@ -309,7 +331,7 @@ class BarangLog extends BaseController
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         
         // Buat 3 sheet
-        $spreadsheet->removeSheetByIndex(0); // Hapus sheet default
+        $spreadsheet->removeSheetByIndex(0);
         
         // Sheet 1: Semua Logs Barang
         $sheetSemua = $spreadsheet->createSheet();
@@ -326,7 +348,6 @@ class BarangLog extends BaseController
         $sheetKeluar->setTitle('Barang Keluar');
         $this->fillBarangExcelSheet($sheetKeluar, $logsKeluar, 'BARANG KELUAR');
         
-        // Set sheet pertama sebagai active
         $spreadsheet->setActiveSheetIndex(0);
         
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
@@ -362,13 +383,11 @@ class BarangLog extends BaseController
         $sheet->setCellValue('L3', 'STATUS');
         $sheet->setCellValue('M3', 'KETERANGAN');
         
-        // Style header
         $sheet->getStyle('A3:M3')->getFont()->setBold(true);
         $sheet->getStyle('A3:M3')->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FFE0E0E0');
         
-        // Data
         $row = 4;
         foreach ($data as $log) {
             $sheet->setCellValue('A' . $row, $log['created_at']);
@@ -387,12 +406,10 @@ class BarangLog extends BaseController
             $row++;
         }
         
-        // Auto size columns
         foreach (range('A', 'M') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
         
-        // Summary di bawah
         if (!empty($data)) {
             $lastRow = $row;
             $sheet->setCellValue('A' . ($lastRow + 2), 'TOTAL DATA: ' . count($data));
@@ -419,17 +436,22 @@ class BarangLog extends BaseController
         $builderPerpanjangan->where('l.aksi', 'Perpanjangan');
         $logsPerpanjangan = $builderPerpanjangan->orderBy('l.created_at', 'DESC')->get()->getResultArray();
 
+        // Query untuk logs update laptop
+        $builderUpdate = $this->getLaptopBaseQuery($db, $keyword, $startDate, $endDate);
+        $builderUpdate->where('l.aksi', 'Update');
+        $logsUpdate = $builderUpdate->orderBy('l.created_at', 'DESC')->get()->getResultArray();
+
         $filename = 'log_laptop_' . date('Ymd_His') . '.xlsx';
         
-        return $this->exportLaptopToExcel($logsSemua, $logsRegistrasi, $logsPerpanjangan, $filename);
+        return $this->exportLaptopToExcel($logsSemua, $logsRegistrasi, $logsPerpanjangan, $logsUpdate, $filename);
     }
 
-    private function exportLaptopToExcel($logsSemua, $logsRegistrasi, $logsPerpanjangan, $filename)
+    private function exportLaptopToExcel($logsSemua, $logsRegistrasi, $logsPerpanjangan, $logsUpdate, $filename)
     {
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         
-        // Buat 3 sheet
-        $spreadsheet->removeSheetByIndex(0); // Hapus sheet default
+        // Buat 4 sheet
+        $spreadsheet->removeSheetByIndex(0);
         
         // Sheet 1: Semua Logs Laptop
         $sheetSemua = $spreadsheet->createSheet();
@@ -446,7 +468,11 @@ class BarangLog extends BaseController
         $sheetPerpanjangan->setTitle('Perpanjangan Laptop');
         $this->fillLaptopExcelSheet($sheetPerpanjangan, $logsPerpanjangan, 'PERPANJANGAN LAPTOP');
         
-        // Set sheet pertama sebagai active
+        // Sheet 4: Update Laptop
+        $sheetUpdate = $spreadsheet->createSheet();
+        $sheetUpdate->setTitle('Update Laptop');
+        $this->fillLaptopExcelSheet($sheetUpdate, $logsUpdate, 'UPDATE LAPTOP');
+        
         $spreadsheet->setActiveSheetIndex(0);
         
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
@@ -463,57 +489,73 @@ class BarangLog extends BaseController
     {
         // Judul sheet
         $sheet->setCellValue('A1', strtoupper($title));
-        $sheet->mergeCells('A1:K1');
+        $sheet->mergeCells('A1:O1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         
-        // Header kolom (sesuai struktur laptop)
+        // Header kolom dengan REGISTRASI_KE
         $sheet->setCellValue('A3', 'TANGGAL');
         $sheet->setCellValue('B3', 'AKSI');
-        $sheet->setCellValue('C3', 'NAMA PENGGUNA');
-        $sheet->setCellValue('D3', 'NOMOR ID CARD');
-        $sheet->setCellValue('E3', 'INSTANSI/DIVISI');
-        $sheet->setCellValue('F3', 'MEREK');
-        $sheet->setCellValue('G3', 'TIPE');
-        $sheet->setCellValue('H3', 'NOMOR SERI');
-        $sheet->setCellValue('I3', 'BERLAKU SAMPAI');
-        $sheet->setCellValue('J3', 'SPESIFIKASI');
-        $sheet->setCellValue('K3', 'KETERANGAN');
+        $sheet->setCellValue('C3', 'NO REGISTRASI');
+        $sheet->setCellValue('D3', 'REGISTRASI KE');
+        $sheet->setCellValue('E3', 'JENIS');
+        $sheet->setCellValue('F3', 'NAMA PENGGUNA');
+        $sheet->setCellValue('G3', 'NOMOR ID CARD');
+        $sheet->setCellValue('H3', 'INSTANSI/DIVISI');
+        $sheet->setCellValue('I3', 'MEREK');
+        $sheet->setCellValue('J3', 'TIPE');
+        $sheet->setCellValue('K3', 'NOMOR SERI');
+        $sheet->setCellValue('L3', 'BERLAKU SAMPAI');
+        $sheet->setCellValue('M3', 'SPESIFIKASI');
+        $sheet->setCellValue('N3', 'STATUS LAPTOP');
+        $sheet->setCellValue('O3', 'KETERANGAN');
         
-        // Style header
-        $sheet->getStyle('A3:K3')->getFont()->setBold(true);
-        $sheet->getStyle('A3:K3')->getFill()
+        $sheet->getStyle('A3:O3')->getFont()->setBold(true);
+        $sheet->getStyle('A3:O3')->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FFE0E0E0');
         
-        // Data
         $row = 4;
         foreach ($data as $log) {
             $sheet->setCellValue('A' . $row, $log['created_at']);
             $sheet->setCellValue('B' . $row, $log['aksi']);
-            $sheet->setCellValue('C' . $row, $log['nama_pengguna'] ?? '-');
-            $sheet->setCellValue('D' . $row, $log['nomor_id_card'] ?? '-');
-            $sheet->setCellValue('E' . $row, $log['instansi_divisi'] ?? '-');
-            $sheet->setCellValue('F' . $row, $log['merek'] ?? '-');
-            $sheet->setCellValue('G' . $row, $log['tipe_laptop'] ?? '-');
-            $sheet->setCellValue('H' . $row, $log['nomor_seri'] ?? '-');
-            $sheet->setCellValue('I' . $row, $log['berlaku_sampai'] ?? '-');
-            $sheet->setCellValue('J' . $row, $log['spesifikasi_lain'] ?? '-');
-            $sheet->setCellValue('K' . $row, $log['log_keterangan'] ?? '-');
+            $sheet->setCellValue('C' . $row, $log['no_registrasi'] ?? $log['laptop_no_registrasi'] ?? '-');
+            $sheet->setCellValue('D' . $row, $log['registrasi_ke'] ?? $log['laptop_registrasi_ke'] ?? '1');
+            $sheet->setCellValue('E' . $row, $log['jenis'] ?? '-');
+            $sheet->setCellValue('F' . $row, $log['nama_pengguna'] ?? '-');
+            $sheet->setCellValue('G' . $row, $log['nomor_id_card'] ?? '-');
+            $sheet->setCellValue('H' . $row, $log['instansi_divisi'] ?? '-');
+            $sheet->setCellValue('I' . $row, $log['merek'] ?? '-');
+            $sheet->setCellValue('J' . $row, $log['tipe_laptop'] ?? '-');
+            $sheet->setCellValue('K' . $row, $log['nomor_seri'] ?? '-');
+            $sheet->setCellValue('L' . $row, $log['berlaku_sampai'] ?? '-');
+            $sheet->setCellValue('M' . $row, $log['spesifikasi_lain'] ?? '-');
+            $sheet->setCellValue('N' . $row, $log['laptop_status'] ?? '-');
+            $sheet->setCellValue('O' . $row, $log['log_keterangan'] ?? '-');
             $row++;
         }
         
-        // Auto size columns
-        foreach (range('A', 'K') as $column) {
+        foreach (range('A', 'O') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
         
-        // Summary di bawah
         if (!empty($data)) {
             $lastRow = $row;
             $sheet->setCellValue('A' . ($lastRow + 2), 'TOTAL DATA: ' . count($data));
-            $sheet->mergeCells('A' . ($lastRow + 2) . ':K' . ($lastRow + 2));
+            $sheet->mergeCells('A' . ($lastRow + 2) . ':O' . ($lastRow + 2));
             $sheet->getStyle('A' . ($lastRow + 2))->getFont()->setBold(true);
+            
+            // Hitung berdasarkan jenis
+            $pegawai = 0;
+            $nonPegawai = 0;
+            foreach ($data as $log) {
+                if (isset($log['jenis']) && $log['jenis'] == 'Pegawai') $pegawai++;
+                if (isset($log['jenis']) && $log['jenis'] == 'Non Pegawai') $nonPegawai++;
+            }
+            
+            $lastRow += 2;
+            $sheet->setCellValue('A' . $lastRow, 'Pegawai: ' . $pegawai);
+            $sheet->setCellValue('B' . $lastRow, 'Non Pegawai: ' . $nonPegawai);
         }
     }
 
@@ -540,7 +582,7 @@ class BarangLog extends BaseController
         $db = \Config\Database::connect();
         
         $logs = $db->table('laptop_logs l')
-            ->select('l.*, lp.nama_pengguna, lp.merek, lp.tipe_laptop, lp.nomor_seri')
+            ->select('l.*, lp.nama_pengguna, lp.merek, lp.tipe_laptop, lp.nomor_seri, lp.no_registrasi, lp.jenis, lp.registrasi_ke')
             ->join('laptop lp', 'lp.id = l.laptop_id')
             ->where('l.laptop_id', $laptopId)
             ->orderBy('l.created_at', 'ASC')

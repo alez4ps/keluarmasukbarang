@@ -188,7 +188,7 @@
                         <label class="form-label">Pencarian</label>
                         <div class="input-group">
                             <input type="text" name="keyword" class="form-control"
-                                   placeholder="Cari nama / merek / seri..."
+                                   placeholder="Cari nama / merek / seri / no registrasi..."
                                    value="<?= esc($keyword ?? '') ?>">
                             <button class="btn btn-outline-primary" type="submit">
                                 <i class="bi bi-search"></i>
@@ -230,7 +230,7 @@
         </div>
         <?php endif; ?>
 
-        <!-- Tab navigasi untuk laptop (sesuai struktur: Registrasi & Perpanjangan) -->
+        <!-- Tab navigasi untuk laptop -->
         <ul class="nav nav-tabs mb-3" id="laptopLogTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link <?= ($laptopActiveTab ?? 'semua') == 'semua' ? 'active' : '' ?>" 
@@ -302,14 +302,38 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function() {
             const logType = document.getElementById('logTypeInput')?.value;
             if (logType === 'laptop') {
-                document.getElementById('laptopActiveTabInput').value = 
-                    document.querySelector('#laptopLogTab .nav-link.active')?.getAttribute('onclick')?.match(/value='([^']+)'/) ?.[1] || 'semua';
+                const activeTab = document.querySelector('#laptopLogTab .nav-link.active');
+                if (activeTab) {
+                    const onclickAttr = activeTab.getAttribute('onclick');
+                    const match = onclickAttr ? onclickAttr.match(/value='([^']+)'/) : null;
+                    document.getElementById('laptopActiveTabInput').value = match ? match[1] : 'semua';
+                }
             } else {
-                document.getElementById('activeTabInput').value = 
-                    document.querySelector('#logTab .nav-link.active')?.getAttribute('onclick')?.match(/value='([^']+)'/) ?.[1] || 'semua';
+                const activeTab = document.querySelector('#logTab .nav-link.active');
+                if (activeTab) {
+                    const onclickAttr = activeTab.getAttribute('onclick');
+                    const match = onclickAttr ? onclickAttr.match(/value='([^']+)'/) : null;
+                    document.getElementById('activeTabInput').value = match ? match[1] : 'semua';
+                }
             }
         });
     });
+
+    // Handle tab switching untuk menyimpan state
+    const logTypeTabs = document.querySelectorAll('#logTypeTab .nav-link');
+    logTypeTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const logType = this.id === 'barang-tab' ? 'barang' : 'laptop';
+            document.getElementById('logTypeInput').value = logType;
+        });
+    });
+
+    // Load konten tab yang sesuai berdasarkan URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const logType = urlParams.get('log_type');
+    if (logType === 'laptop') {
+        document.getElementById('laptop-tab').click();
+    }
 });
 </script>
 

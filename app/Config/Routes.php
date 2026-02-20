@@ -6,17 +6,18 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
-
 $routes->get('/', 'Auth::login');
 $routes->get('/login', 'Auth::login');
 $routes->post('/login', 'Auth::process');
 $routes->post('/logout', 'Auth::logout');
 
 $routes->get('/dashboard', 'Dashboard::index');
-$routes->group('Admin', ['filter' => 'role:admin'], function($routes){
+
+$routes->group('Admin', ['filter' => 'role:admin'], function($routes) {
     $routes->get('dashboard', 'DAdmin::index');
 });
-$routes->group('Petugas', ['filter' => 'role:petugas'], function($routes){
+
+$routes->group('Petugas', ['filter' => 'role:petugas'], function($routes) {
     $routes->get('dashboard', 'DPetugas::index');
 });
 
@@ -28,7 +29,6 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->post('/users/update/(:num)', 'Users::update/$1');
     $routes->get('/users/delete/(:num)', 'Users::delete/$1');
     $routes->get('users/print', 'Users::print');
-
 });
 
 $routes->get('registrasi', 'Barang::index');
@@ -59,11 +59,15 @@ $routes->group('logs', function($routes) {
 });
 
 $routes->get('/barang/laptop', 'Barang::laptop');
-$routes->get('/barang/searchLaptop', 'Barang::searchLaptop'); // TAMBAHKAN INI
+$routes->get('/barang/searchLaptop', 'Barang::searchLaptop');
 $routes->post('/barang/laptop/store', 'Barang::storeLaptop');
 $routes->get('/barang/laptop/edit/(:num)', 'Barang::editLaptop/$1');
 $routes->post('/barang/laptop/update/(:num)', 'Barang::updateLaptop/$1');
 $routes->get('/barang/laptop/delete/(:num)', 'Barang::deleteLaptop/$1');
-$routes->post('/barang/laptop/change-status/(:num)', 'Barang::changeLaptopStatus/$1');
 $routes->get('/barang/laptop/detail/(:num)', 'Barang::detailLaptop/$1');
 $routes->get('/barang/laptop/export', 'Barang::exportLaptop');
+$routes->post('/barang/laptop/perpanjang', 'Barang::perpanjangLaptop');
+$routes->post('/barang/laptop/change-status/(:num)', 'Barang::changeLaptopStatus/$1');
+$routes->get('/barang/laptop/create', 'Barang::createLaptop');
+$routes->get('/barang/laptop/print/(:num)', 'Barang::printLaptop/$1');
+$routes->get('/barang/laptop/generate-qr/(:num)', 'Barang::generateQR/$1');

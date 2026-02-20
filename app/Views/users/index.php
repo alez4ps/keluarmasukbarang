@@ -9,7 +9,7 @@
         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#userModal">
             <i class="bi bi-person-fill-add"></i> Tambah User
         </button>
-<a href="/users/print" target="_blank" class="btn btn-secondary mb-3">
+<a href="/users/print" target="_blank" class="btn btn-warning mb-3">
     <i class="bi bi-printer"></i> Cetak Laporan
 </a>
     </div>

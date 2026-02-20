@@ -17,13 +17,13 @@
 </ul>
 
 <div class="tab-content" id="mainTabContent">
+    <!-- ========== TAB BARANG ========== -->
     <div class="tab-pane fade show active" id="barang" role="tabpanel" aria-labelledby="barang-tab">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="d-flex gap-2">
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrasiModal">
                     <i class="bi bi-box-arrow-down"></i> Barang Masuk
                 </button>
-
                 <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#keluarModal">
                     <i class="bi bi-box-arrow-up"></i> Barang Keluar
                 </button>
@@ -105,7 +105,7 @@
                         <td><?= esc($barang['is_partial']) ?></td>
                         <td><?= esc($barang['status']) ?></td>
                         <td>
-                            <span class="badge bg-<?= $keterangan === 'Belum Kembali' ? 'primary' : ($keterangan === 'Tidak Kembali' ? 'danger' : 'info') ?>">
+                            <span class="badge bg-<?= $keterangan === 'Belum Kembali' ? 'primary' : ($keterangan === 'Tidak Kembali' ? 'warning' : 'info') ?>">
                                 <?= $keterangan ?>
                             </span>
                         </td>
@@ -235,81 +235,124 @@
         </div>
     </div>
 
-<div class="tab-pane fade" id="laptop" role="tabpanel" aria-labelledby="laptop-tab">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#laptopModal">
-                <i class="bi bi-laptop"></i> Registrasi Laptop
-            </button>
-            <a href="/barang/laptop/export" class="btn btn-success ms-2">
-                <i class="bi bi-file-earmark-excel"></i> Export
-            </a>
+    <!-- ========== TAB LAPTOP ========== -->
+    <div class="tab-pane fade" id="laptop" role="tabpanel" aria-labelledby="laptop-tab">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#laptopModal">
+                    <i class="bi bi-laptop"></i> Registrasi Laptop
+                </button>
+                <a href="/barang/laptop/export" class="btn btn-warning ms-2">
+                    <i class="bi bi-file-earmark-excel"></i> Export
+                </a>
+            </div>
+
+            <form class="d-flex gap-2" id="searchLaptopForm">
+                <input type="text" id="searchKeyword" class="form-control" 
+                       placeholder="Cari pengguna / merek / seri / no registrasi..."
+                       value="<?= esc($keywordLaptop ?? '') ?>">
+                <select id="searchStatus" class="form-select" style="width: 150px;">
+                    <option value="">Semua Status</option>
+                    <option value="Masih Berlaku" <?= ($statusLaptop ?? '') == 'Masih Berlaku' ? 'selected' : '' ?>>Masih Berlaku</option>
+                    <option value="Tidak Berlaku" <?= ($statusLaptop ?? '') == 'Tidak Berlaku' ? 'selected' : '' ?>>Tidak Berlaku</option>
+                    <option value="Diperpanjang" <?= ($statusLaptop ?? '') == 'Diperpanjang' ? 'selected' : '' ?>>Diperpanjang</option>
+                </select>
+                <button type="submit" class="btn btn-outline-secondary" id="btnSearchLaptop">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
         </div>
 
-        <form class="d-flex gap-2" id="searchLaptopForm">
-            <input type="text" id="searchKeyword" class="form-control" 
-                   placeholder="Cari pengguna / merek / seri..."
-                   value="<?= esc($keywordLaptop ?? '') ?>">
-            <select id="searchStatus" class="form-select" style="width: 150px;">
-                <option value="">Semua Status</option>
-                <option value="Masih Berlaku" <?= ($statusLaptop ?? '') == 'Masih Berlaku' ? 'selected' : '' ?>>Masih Berlaku</option>
-                <option value="Tidak Berlaku" <?= ($statusLaptop ?? '') == 'Tidak Berlaku' ? 'selected' : '' ?>>Tidak Berlaku</option>
-            </select>
-            <button type="submit" class="btn btn-outline-secondary" id="btnSearchLaptop">
-                <i class="bi bi-search"></i>
-            </button>
-        </form>
-    </div>
-
-    <div id="laptopTableContainer">
-        <?= $this->include('laptop/table') ?>
+        <div id="laptopTableContainer">
+            <!-- Tabel Laptop akan dimuat via AJAX -->
+            <?= $this->include('laptop/table') ?>
+        </div>
     </div>
 </div>
+
+<!-- ============================================ -->
+<!-- MODAL QR CODE -->
+<!-- ============================================ -->
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrModalLabel">
+                    <i class="bi bi-qr-code"></i> 
+                    QR Code Laptop
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrCodeContainer" class="mb-3"></div>
+                <p id="qrCodeText" class="text-muted small"></p>
+                <button type="button" class="btn btn-sm btn-primary" onclick="downloadQRCode()">
+                    <i class="bi bi-download"></i> Download QR
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- ============================================ -->
+<!-- MODAL DETAIL LAPTOP (LOOP) -->
+<!-- ============================================ -->
 <?php foreach ($laptops as $laptop): ?>
-<div class="modal fade" id="detailLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
+<div class="modal fade" id="detailLaptopModal<?= $laptop['id'] ?>" tabindex="-1" aria-labelledby="detailLaptopModalLabel<?= $laptop['id'] ?>" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-title" id="detailLaptopModalLabel<?= $laptop['id'] ?>">
                     <i class="bi bi-laptop"></i> 
                     Detail Laptop
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="card mb-3 shadow-sm">
-                    <div class="card-header bg-light fw-semibold">
-                        <i class="bi bi-info-circle"></i> Informasi Laptop
+                    <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-info-circle"></i> Informasi Laptop</span>
+                        <?php if (isset($laptop['jenis'])): ?>
+                            <span class="badge bg-<?= $laptop['jenis'] == 'Pegawai' ? 'primary' : 'info' ?>">
+                                <?= esc($laptop['jenis']) ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
+                                <small class="text-muted">No. Registrasi</small>
+                                <div class="fw-bold"><?= esc($laptop['no_registrasi'] ?? '-') ?></div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Tanggal Registrasi</small>
+                                <div><?= isset($laptop['created_at']) ? date('d/m/Y H:i', strtotime($laptop['created_at'])) : '-' ?></div>
+                            </div>
+                            <div class="col-md-6">
                                 <small class="text-muted">Nama Pengguna</small>
-                                <div class="fw-semibold"><?= esc($laptop['nama_pengguna']) ?></div>
+                                <div class="fw-semibold"><?= esc($laptop['nama_pengguna'] ?? '') ?></div>
                             </div>
                             <div class="col-md-6">
                                 <small class="text-muted">Nomor ID Card</small>
-                                <div class="fw-semibold"><?= esc($laptop['nomor_id_card']) ?></div>
+                                <div class="fw-semibold"><?= esc($laptop['nomor_id_card'] ?? '') ?></div>
                             </div>
                             <div class="col-md-6">
                                 <small class="text-muted">Instansi/Divisi</small>
-                                <div><?= esc($laptop['instansi_divisi']) ?></div>
+                                <div><?= esc($laptop['instansi_divisi'] ?? '') ?></div>
                             </div>
                             <div class="col-md-6">
                                 <small class="text-muted">Merek & Tipe</small>
-                                <div><?= esc($laptop['merek']) ?> <?= esc($laptop['tipe_laptop']) ?></div>
+                                <div><?= esc($laptop['merek'] ?? '') ?> <?= esc($laptop['tipe_laptop'] ?? '') ?></div>
                             </div>
                             <div class="col-md-6">
                                 <small class="text-muted">Nomor Seri</small>
-                                <div class="fw-semibold"><?= esc($laptop['nomor_seri']) ?></div>
+                                <div class="fw-semibold"><?= esc($laptop['nomor_seri'] ?? '') ?></div>
                             </div>
                             <div class="col-md-6">
                                 <small class="text-muted">Berlaku Sampai</small>
                                 <div>
-                                    <?= date('d/m/Y', strtotime($laptop['berlaku_sampai'])) ?>
-                                    <?php if (strtotime($laptop['berlaku_sampai']) < time()): ?>
+                                    <?= isset($laptop['berlaku_sampai']) ? date('d/m/Y', strtotime($laptop['berlaku_sampai'])) : '-' ?>
+                                    <?php if (isset($laptop['berlaku_sampai']) && strtotime($laptop['berlaku_sampai']) < time()): ?>
                                         <span class="badge bg-danger ms-2">Expired</span>
                                     <?php endif; ?>
                                 </div>
@@ -333,14 +376,16 @@
                             <div class="col-md-6">
                                 <small class="text-muted d-block mb-2">Status Saat Ini</small>
                                 <?php
-                                $badge = match($laptop['status']) {
+                                $status = $laptop['status'] ?? 'Tidak Diketahui';
+                                $badge = match($status) {
                                     'Masih Berlaku' => 'success',
                                     'Tidak Berlaku' => 'secondary',
-                                    default => 'primary'
+                                    'Diperpanjang' => 'primary',
+                                    default => 'secondary'
                                 };
                                 ?>
                                 <span class="badge bg-<?= $badge ?> p-2" style="font-size: 1rem;">
-                                    <?= $laptop['status'] ?>
+                                    <?= $status ?>
                                 </span>
                             </div>
                             <div class="col-md-6">
@@ -350,6 +395,63 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-clock-history"></i> Riwayat Registrasi & Perpanjangan</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <?php if (!empty($laptop['logs'])): ?>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Aksi</th>
+                                            <th>Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php 
+                                        $logSorted = $laptop['logs'];
+                                        usort($logSorted, function($a, $b) {
+                                            return strtotime($b['created_at']) - strtotime($a['created_at']);
+                                        });
+                                        
+                                        foreach ($logSorted as $log): 
+                                        ?>
+                                            <tr>
+                                                <td>
+                                                    <small><?= date('d/m/Y H:i', strtotime($log['created_at'])) ?></small>
+                                                </td>
+                                                <td>
+                                                    <?php
+                                                    $badge = match ($log['aksi']) {
+                                                        'Registrasi' => 'primary',
+                                                        'Perpanjangan' => 'warning',
+                                                        'Perubahan Data' => 'info',
+                                                        'Nonaktif' => 'secondary',
+                                                        default => 'secondary'
+                                                    };
+                                                    ?>
+                                                    <span class="badge bg-<?= $badge ?>">
+                                                        <?= esc($log['aksi']) ?>
+                                                    </span>
+                                                </td>
+                                                <td><small><?= esc($log['keterangan']) ?></small></td>
+                                            </tr>
+                                        <?php endforeach ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php else: ?>
+                            <div class="p-4 text-center text-muted">
+                                <i class="bi bi-inbox display-6"></i><br>
+                                <h6 class="mt-3">Belum ada riwayat perpanjangan</h6>
+                            </div>
+                        <?php endif ?>
                     </div>
                 </div>
             </div>
@@ -366,36 +468,50 @@
 </div>
 <?php endforeach; ?>
 
-<div class="modal fade" id="laptopModal" tabindex="-1">
+<!-- ============================================ -->
+<!-- MODAL REGISTRASI LAPTOP (DENGAN DROPDOWN JENIS) -->
+<!-- ============================================ -->
+<div class="modal fade" id="laptopModal" tabindex="-1" aria-labelledby="laptopModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form method="post" action="/barang/laptop/store">
                 <?= csrf_field() ?>
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title" id="laptopModalLabel">
                         <i class="bi bi-laptop"></i> 
                         Registrasi Laptop Baru
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    
                     <div class="row g-3">
+                        <!-- DROPDOWN JENIS -->
+                        <div class="col-md-6">
+                            <label class="form-label">Jenis Pengguna <span class="text-danger">*</span></label>
+                            <select name="jenis" class="form-select" required>
+                                <option value="">-- Pilih Jenis Pengguna --</option>
+                                <option value="Pegawai">Pegawai</option>
+                                <option value="Non Pegawai">Non Pegawai</option>
+                            </select>
+                        </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Nama Pengguna <span class="text-danger">*</span></label>
                             <input type="text" name="nama_pengguna" class="form-control" 
-                                   placeholder="Masukkan nama pengguna" required>
+                                   placeholder="Masukkan nama lengkap pengguna" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Nomor ID Card <span class="text-danger">*</span></label>
                             <input type="text" name="nomor_id_card" class="form-control" 
-                                   placeholder="Contoh: PEG-2024-001" required>
+                                   placeholder="Masukkan Nomor ID Card Pengguna" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Instansi/Divisi <span class="text-danger">*</span></label>
                             <input type="text" name="instansi_divisi" class="form-control" 
-                                   placeholder="Nama Sekolah/Divisi" required>
+                                   placeholder="Nama Sekolah/Divisi/Instansi" required>
                         </div>
                         
                         <div class="col-md-6">
@@ -428,9 +544,9 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Berlaku Sampai Dengan <span class="text-danger">*</span></label>
+                            <label class="form-label">Berlaku Sampai <span class="text-danger">*</span></label>
                             <input type="date" name="berlaku_sampai" class="form-control" 
-                                   min="<?= date('Y-m-d') ?>" required>
+                                   min="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d', strtotime('+1 year')) ?>" required>
                         </div>
 
                         <div class="col-12">
@@ -438,6 +554,8 @@
                             <textarea name="spesifikasi_lain" class="form-control" rows="3"
                                       placeholder="Contoh: Intel Core i7, RAM 16GB, SSD 512GB, Windows 11 Pro"></textarea>
                         </div>
+
+                        <input type="hidden" name="status" value="Masih Berlaku">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -453,37 +571,124 @@
     </div>
 </div>
 
+<!-- ============================================ -->
+<!-- MODAL PERPANJANG LAPTOP (SATU UNTUK SEMUA) -->
+<!-- ============================================ -->
+<div class="modal fade" id="perpanjangLaptopModal" tabindex="-1" aria-labelledby="perpanjangLaptopModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="/barang/laptop/perpanjang" id="formPerpanjangLaptop">
+                <?= csrf_field() ?>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="perpanjangLaptopModalLabel">
+                        <i class="bi bi-arrow-repeat"></i> 
+                        Perpanjang Masa Berlaku Laptop
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="laptop_id" id="perpanjang_laptop_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nama Pengguna</label>
+                        <input type="text" class="form-control" id="perpanjang_nama" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nomor Seri</label>
+                        <input type="text" class="form-control" id="perpanjang_seri" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">No. Registrasi Saat Ini</label>
+                        <input type="text" class="form-control" id="perpanjang_no_registrasi" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Registrasi Ke</label>
+                        <input type="text" class="form-control" id="perpanjang_registrasi_ke" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Berlaku Sampai Saat Ini</label>
+                        <input type="text" class="form-control" id="perpanjang_berlaku_sampai_lama" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Berlaku Sampai Baru <span class="text-danger">*</span></label>
+                        <input type="date" name="berlaku_sampai_baru" class="form-control" 
+                               id="perpanjang_berlaku_sampai_baru"
+                               min="<?= date('Y-m-d', strtotime('+1 day')) ?>" required>
+                        <small class="text-muted">Tanggal harus setelah tanggal berlaku saat ini</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Keterangan Perpanjangan</label>
+                        <textarea name="keterangan" class="form-control" rows="2" 
+                                  id="perpanjang_keterangan"
+                                  placeholder="Contoh: Perpanjangan tahun ke-2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-arrow-repeat"></i> Perpanjang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL EDIT LAPTOP (DENGAN DROPDOWN JENIS) -->
+<!-- ============================================ -->
 <?php foreach ($laptops as $laptop): ?>
-<div class="modal fade" id="editLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
+<div class="modal fade" id="editLaptopModal<?= $laptop['id'] ?>" tabindex="-1" aria-labelledby="editLaptopModalLabel<?= $laptop['id'] ?>" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form method="post" action="/barang/laptop/update/<?= $laptop['id'] ?>">
                 <?= csrf_field() ?>
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title" id="editLaptopModalLabel<?= $laptop['id'] ?>">
                         <i class="bi bi-pencil-square"></i> 
                         Edit Data Laptop
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        Nomor Registrasi: <strong><?= esc($laptop['no_registrasi'] ?? 'Belum tersedia') ?></strong> (Tidak dapat diubah)
+                    </div>
+                    
                     <div class="row g-3">
+                        <!-- DROPDOWN JENIS -->
+                        <div class="col-md-6">
+                            <label class="form-label">Jenis Pengguna <span class="text-danger">*</span></label>
+                            <select name="jenis" class="form-select" required>
+                                <option value="">-- Pilih Jenis Pengguna --</option>
+                                <option value="Pegawai" <?= (isset($laptop['jenis']) && $laptop['jenis'] == 'Pegawai') ? 'selected' : '' ?>>Pegawai</option>
+                                <option value="Non Pegawai" <?= (isset($laptop['jenis']) && $laptop['jenis'] == 'Non Pegawai') ? 'selected' : '' ?>>Non Pegawai</option>
+                            </select>
+                        </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Nama Pengguna <span class="text-danger">*</span></label>
                             <input type="text" name="nama_pengguna" class="form-control" 
-                                   value="<?= esc($laptop['nama_pengguna']) ?>" required>
+                                   value="<?= esc($laptop['nama_pengguna'] ?? '') ?>" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Nomor ID Card <span class="text-danger">*</span></label>
                             <input type="text" name="nomor_id_card" class="form-control" 
-                                   value="<?= esc($laptop['nomor_id_card']) ?>" required>
+                                   value="<?= esc($laptop['nomor_id_card'] ?? '') ?>" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Instansi/Divisi <span class="text-danger">*</span></label>
                             <input type="text" name="instansi_divisi" class="form-control" 
-                                   value="<?= esc($laptop['instansi_divisi']) ?>" required>
+                                   value="<?= esc($laptop['instansi_divisi'] ?? '') ?>" required>
                         </div>
                         
                         <div class="col-md-6">
@@ -493,7 +698,7 @@
                                 <?php
                                 $mereks = ['Dell', 'HP', 'Lenovo', 'Asus', 'Acer', 'Apple', 'Toshiba', 'Fujitsu', 'Lainnya'];
                                 foreach ($mereks as $m): ?>
-                                    <option value="<?= $m ?>" <?= $laptop['merek'] == $m ? 'selected' : '' ?>><?= $m ?></option>
+                                    <option value="<?= $m ?>" <?= (isset($laptop['merek']) && $laptop['merek'] == $m) ? 'selected' : '' ?>><?= $m ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -501,37 +706,38 @@
                         <div class="col-md-6">
                             <label class="form-label">Tipe Laptop</label>
                             <input type="text" name="tipe_laptop" class="form-control" 
-                                   value="<?= esc($laptop['tipe_laptop']) ?>">
+                                   value="<?= esc($laptop['tipe_laptop'] ?? '') ?>">
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Nomor Seri <span class="text-danger">*</span></label>
                             <input type="text" name="nomor_seri" class="form-control" 
-                                   value="<?= esc($laptop['nomor_seri']) ?>" required>
+                                   value="<?= esc($laptop['nomor_seri'] ?? '') ?>" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Berlaku Sampai <span class="text-danger">*</span></label>
                             <input type="date" name="berlaku_sampai" class="form-control" 
-                                   value="<?= $laptop['berlaku_sampai'] ?>" required>
+                                   value="<?= $laptop['berlaku_sampai'] ?? date('Y-m-d', strtotime('+1 year')) ?>" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Status</label>
                             <select name="status" class="form-select">
-                                <option value="Masih Berlaku" <?= $laptop['status'] == 'Masih Berlaku' ? 'selected' : '' ?>>Masih Berlaku</option>
-                                <option value="Tidak Berlaku" <?= $laptop['status'] == 'Tidak Berlaku' ? 'selected' : '' ?>>Tidak Berlaku</option>
+                                <option value="Masih Berlaku" <?= (isset($laptop['status']) && $laptop['status'] == 'Masih Berlaku') ? 'selected' : '' ?>>Masih Berlaku</option>
+                                <option value="Tidak Berlaku" <?= (isset($laptop['status']) && $laptop['status'] == 'Tidak Berlaku') ? 'selected' : '' ?>>Tidak Berlaku</option>
+                                <option value="Diperpanjang" <?= (isset($laptop['status']) && $laptop['status'] == 'Diperpanjang') ? 'selected' : '' ?>>Diperpanjang</option>
                             </select>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label">Spesifikasi Lain</label>
-                            <textarea name="spesifikasi_lain" class="form-control" rows="3"><?= esc($laptop['spesifikasi_lain']) ?></textarea>
+                            <textarea name="spesifikasi_lain" class="form-control" rows="3"><?= esc($laptop['spesifikasi_lain'] ?? '') ?></textarea>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label">Keterangan</label>
-                            <textarea name="keterangan" class="form-control" rows="2"><?= esc($laptop['keterangan']) ?></textarea>
+                            <textarea name="keterangan" class="form-control" rows="2"><?= esc($laptop['keterangan'] ?? '') ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -544,17 +750,20 @@
     </div>
 </div>
 
-<div class="modal fade" id="deleteLaptopModal<?= $laptop['id'] ?>" tabindex="-1">
+<!-- ============================================ -->
+<!-- MODAL HAPUS LAPTOP -->
+<!-- ============================================ -->
+<div class="modal fade" id="deleteLaptopModal<?= $laptop['id'] ?>" tabindex="-1" aria-labelledby="deleteLaptopModalLabel<?= $laptop['id'] ?>" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="deleteLaptopModalLabel<?= $laptop['id'] ?>">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Yakin ingin menghapus data laptop:</p>
-                <p><strong><?= esc($laptop['nama_pengguna']) ?></strong><br>
-                <small><?= esc($laptop['merek']) ?> <?= esc($laptop['tipe_laptop']) ?> (<?= esc($laptop['nomor_seri']) ?>)</small></p>
+                <p><strong><?= esc($laptop['nama_pengguna'] ?? '') ?></strong><br>
+                <small><?= esc($laptop['merek'] ?? '') ?> <?= esc($laptop['tipe_laptop'] ?? '') ?> (<?= esc($laptop['nomor_seri'] ?? '') ?>)</small></p>
                 <p class="text-danger"><i class="bi bi-exclamation-triangle"></i> Tindakan ini tidak dapat dibatalkan.</p>
             </div>
             <div class="modal-footer">
@@ -568,15 +777,18 @@
 </div>
 <?php endforeach; ?>
 
+<!-- ============================================ -->
+<!-- MODAL EDIT BARANG -->
+<!-- ============================================ -->
 <?php foreach ($barangs as $barang): ?>
-<div class="modal fade" id="EditModal<?= $barang['id'] ?>" tabindex="-1">
+<div class="modal fade" id="EditModal<?= $barang['id'] ?>" tabindex="-1" aria-labelledby="EditModalLabel<?= $barang['id'] ?>" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form method="post" action="/registrasi/update/<?= $barang['id'] ?>">
                 <?= csrf_field() ?>
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Barang</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="EditModalLabel<?= $barang['id'] ?>">Edit Barang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -652,12 +864,15 @@
     </div>
 </div>
 
-<div class="modal fade" id="DetailModal<?= $barang['id'] ?>" tabindex="-1">
+<!-- ============================================ -->
+<!-- MODAL DETAIL BARANG -->
+<!-- ============================================ -->
+<div class="modal fade" id="DetailModal<?= $barang['id'] ?>" tabindex="-1" aria-labelledby="DetailModalLabel<?= $barang['id'] ?>" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Detail Barang</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="DetailModalLabel<?= $barang['id'] ?>">Detail Barang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="card mb-3 shadow-sm">
@@ -752,80 +967,84 @@
                                     </div>
                                 </div>
                             </div>
-<div class="card shadow-sm">
-    <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-clock-history"></i> Riwayat Aktivitas</span>
-        <span class="badge bg-secondary"><?= count($barang['history'] ?? []) ?> aktivitas</span>
-    </div>
-    <div class="card-body p-0">
-        <?php if (!empty($barang['history'])): ?>
-            <div class="table-responsive" style="max-height:300px">
-                <table class="table table-sm table-striped mb-0">
-                    <thead class="table-light sticky-top">
-                        <tr>
-                            <th>Waktu</th>
-                            <th>Aksi</th>
-                            <th>Jumlah</th>
-                            <th>Sisa</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php 
-                        $historySorted = $barang['history'];
-                        usort($historySorted, function($a, $b) {
-                            return strtotime($a['created_at']) - strtotime($b['created_at']);
-                        });
-                        
-                        foreach ($historySorted as $hist): 
-                        ?>
-                            <tr>
-                                <td>
-                                    <small><?= date('d/m/Y', strtotime($hist['created_at'])) ?></small><br>
-                                    <small class="text-muted"><?= date('H:i:s', strtotime($hist['created_at'])) ?></small>
-                                </td>
-                                <td>
-                                    <?php
-                                    $badge = match ($hist['aksi']) {
-                                        'Registrasi' => 'primary',
-                                        'Masuk' => 'success',
-                                        'Keluar' => 'warning',
-                                        'Kembali' => 'info',
-                                        'Selesai' => 'dark',
-                                        default => 'secondary'
-                                    };
-                                    ?>
-                                    <span class="badge bg-<?= $badge ?>">
-                                        <?= esc($hist['aksi']) ?>
-                                    </span>
-                                </td>
-                                <td><?= esc($hist['jumlah']) ?> <?= esc($barang['satuan']) ?></td>
-                                <td><?= esc($hist['sisa']) ?> <?= esc($barang['satuan']) ?></td>
-                                <td><small><?= esc($hist['keterangan']) ?></small></td>
-                            </tr>
-                        <?php endforeach ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php else: ?>
-            <div class="p-4 text-center text-muted">
-                <i class="bi bi-inbox display-6"></i><br>
-                <h6 class="mt-3">Belum ada riwayat aktivitas</h6>
-            </div>
-        <?php endif ?>
-    </div>
-</div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-clock-history"></i> Riwayat Aktivitas</span>
+                        <span class="badge bg-secondary"><?= count($barang['history'] ?? []) ?> aktivitas</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <?php if (!empty($barang['history'])): ?>
+                            <div class="table-responsive" style="max-height:300px">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Waktu</th>
+                                            <th>Aksi</th>
+                                            <th>Jumlah</th>
+                                            <th>Sisa</th>
+                                            <th>Keterangan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php 
+                                        $historySorted = $barang['history'];
+                                        usort($historySorted, function($a, $b) {
+                                            return strtotime($a['created_at']) - strtotime($b['created_at']);
+                                        });
+                                        
+                                        foreach ($historySorted as $hist): 
+                                        ?>
+                                            <tr>
+                                                <td>
+                                                    <small><?= date('d/m/Y', strtotime($hist['created_at'])) ?></small><br>
+                                                    <small class="text-muted"><?= date('H:i:s', strtotime($hist['created_at'])) ?></small>
+                                                </td>
+                                                <td>
+                                                    <?php
+                                                    $badge = match ($hist['aksi']) {
+                                                        'Registrasi' => 'primary',
+                                                        'Masuk' => 'success',
+                                                        'Keluar' => 'warning',
+                                                        'Kembali' => 'info',
+                                                        'Selesai' => 'dark',
+                                                        default => 'secondary'
+                                                    };
+                                                    ?>
+                                                    <span class="badge bg-<?= $badge ?>">
+                                                        <?= esc($hist['aksi']) ?>
+                                                    </span>
+                                                </td>
+                                                <td><?= esc($hist['jumlah']) ?> <?= esc($barang['satuan']) ?></td>
+                                                <td><?= esc($hist['sisa']) ?> <?= esc($barang['satuan']) ?></td>
+                                                <td><small><?= esc($hist['keterangan']) ?></small></td>
+                                            </tr>
+                                        <?php endforeach ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php else: ?>
+                            <div class="p-4 text-center text-muted">
+                                <i class="bi bi-inbox display-6"></i><br>
+                                <h6 class="mt-3">Belum ada riwayat aktivitas</h6>
+                            </div>
+                        <?php endif ?>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- ============================================ -->
+<!-- MODAL KELUAR BARANG -->
+<!-- ============================================ -->
 <div class="modal fade" id="KeluarModal<?= $barang['id'] ?>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -835,7 +1054,7 @@
                     <h5 class="modal-title">
                         <i class="bi bi-box-arrow-up"></i> Proses Barang Keluar
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -868,6 +1087,9 @@
     </div>
 </div>
 
+<!-- ============================================ -->
+<!-- MODAL MASUK BARANG -->
+<!-- ============================================ -->
 <div class="modal fade" id="MasukModal<?= $barang['id'] ?>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -877,7 +1099,7 @@
                     <h5 class="modal-title">
                         <i class="bi bi-box-arrow-in-down"></i> Proses Barang Masuk
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -911,14 +1133,17 @@
 </div>
 <?php endforeach; ?>
 
-<div class="modal fade" id="registrasiModal" tabindex="-1">
+<!-- ============================================ -->
+<!-- MODAL REGISTRASI BARANG MASUK -->
+<!-- ============================================ -->
+<div class="modal fade" id="registrasiModal" tabindex="-1" aria-labelledby="registrasiModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form method="post" action="/registrasi/store">
                 <?= csrf_field() ?>
                 <div class="modal-header">
-                    <h5 class="modal-title">Registrasi Barang Masuk</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="registrasiModalLabel">Registrasi Barang Masuk</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -1039,14 +1264,17 @@
     </div>
 </div>
 
-<div class="modal fade" id="keluarModal" tabindex="-1">
+<!-- ============================================ -->
+<!-- MODAL REGISTRASI BARANG KELUAR -->
+<!-- ============================================ -->
+<div class="modal fade" id="keluarModal" tabindex="-1" aria-labelledby="keluarModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form method="post" action="/registrasi/store">
                 <?= csrf_field() ?>
                 <div class="modal-header">
-                    <h5 class="modal-title">Registrasi Barang Keluar</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="keluarModalLabel">Registrasi Barang Keluar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
@@ -1152,8 +1380,241 @@
     </div>
 </div>
 
+<!-- ============================================ -->
+<!-- SCRIPT PERBAIKAN MODAL DAN FUNGSI -->
+<!-- ============================================ -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
+// ============================================
+// PERBAIKAN MODAL - LENGKAP
+// ============================================
+
+// Fungsi untuk menutup semua modal secara paksa
+function forceCloseAllModals() {
+    document.querySelectorAll('.modal.show, .modal[style*="display: block"]').forEach(modal => {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.removeAttribute('aria-modal');
+        modal.removeAttribute('style');
+    });
+    
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.remove();
+    });
+    
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+}
+
+// Inisialisasi ulang semua modal
+function initModals() {
+    document.querySelectorAll('.modal').forEach(modalElement => {
+        try {
+            const existingModal = bootstrap.Modal.getInstance(modalElement);
+            if (existingModal) {
+                existingModal.dispose();
+            }
+        } catch (e) {
+            console.log('Error disposing modal:', e);
+        }
+        
+        try {
+            const modal = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: true,
+                focus: true
+            });
+            
+            modalElement.addEventListener('hide.bs.modal', function() {
+                setTimeout(() => {
+                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                        backdrop.remove();
+                    });
+                }, 100);
+            });
+            
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                forceCloseAllModals();
+                
+                const form = this.querySelector('form');
+                if (form) {
+                    form.reset();
+                }
+                
+                this.querySelectorAll('[id^="jumlahWrapper"], [id^="sisaWrapper"], [id^="estimasiWrapper"]').forEach(wrapper => {
+                    wrapper.classList.add('d-none');
+                });
+            });
+            
+            modalElement.addEventListener('show.bs.modal', function() {
+                forceCloseAllModals();
+            });
+            
+        } catch (e) {
+            console.log('Error creating modal:', e);
+        }
+    });
+}
+
+// Reinisialisasi semua tombol yang membuka modal
+function reinitModalTriggers() {
+    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+        const newButton = button.cloneNode(true);
+        if (button.parentNode) {
+            button.parentNode.replaceChild(newButton, button);
+        }
+        
+        newButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetId = this.getAttribute('data-bs-target');
+            if (!targetId) return;
+            
+            const modalElement = document.querySelector(targetId);
+            if (!modalElement) return;
+            
+            forceCloseAllModals();
+            
+            setTimeout(() => {
+                try {
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.show();
+                    } else {
+                        const newModal = new bootstrap.Modal(modalElement, {
+                            backdrop: 'static',
+                            keyboard: true
+                        });
+                        newModal.show();
+                    }
+                } catch (error) {
+                    console.error('Error showing modal:', error);
+                    modalElement.classList.add('show');
+                    modalElement.style.display = 'block';
+                    modalElement.setAttribute('aria-hidden', 'false');
+                    modalElement.setAttribute('aria-modal', 'true');
+                    
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                    document.body.classList.add('modal-open');
+                }
+            }, 50);
+        });
+    });
+}
+
+// Perbaikan khusus untuk tombol close
+function fixCloseButtons() {
+    document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+        const newButton = button.cloneNode(true);
+        if (button.parentNode) {
+            button.parentNode.replaceChild(newButton, button);
+        }
+        
+        newButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const modal = this.closest('.modal');
+            if (!modal) return;
+            
+            try {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                } else {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                    forceCloseAllModals();
+                }
+            } catch (error) {
+                forceCloseAllModals();
+            }
+        });
+    });
+}
+
+// Inisialisasi Select2
+function initSelect2() {
+    $('.select2').select2({
+        width: '100%',
+        placeholder: '-- Pilih --',
+        allowClear: true
+    });
+}
+
+function initSelect2InModal(modal) {
+    $(modal).find('select.select2').each(function() {
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2('destroy');
+        }
+    });
+
+    $(modal).find('.select2').select2({
+        width: '100%',
+        placeholder: '-- Pilih --',
+        allowClear: true,
+        dropdownParent: $(modal)
+    });
+}
+
+// Inisialisasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
+    initModals();
+    reinitModalTriggers();
+    fixCloseButtons();
+    initSelect2();
+    
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('shown.bs.modal', function() {
+            initSelect2InModal(this);
+        });
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const openModal = document.querySelector('.modal.show');
+            if (openModal) {
+                e.preventDefault();
+                try {
+                    const modalInstance = bootstrap.Modal.getInstance(openModal);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    } else {
+                        forceCloseAllModals();
+                    }
+                } catch (error) {
+                    forceCloseAllModals();
+                }
+            }
+        }
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            const modal = e.target;
+            try {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                } else {
+                    forceCloseAllModals();
+                }
+            } catch (error) {
+                forceCloseAllModals();
+            }
+        }
+    });
+    
     <?php foreach ($barangs as $barang): ?>
     const akanKembaliCheckbox<?= $barang['id'] ?> = document.getElementById('akanKembali<?= $barang['id'] ?>');
     const estimasiWrapper<?= $barang['id'] ?> = document.getElementById('estimasiKembaliWrapper<?= $barang['id'] ?>');
@@ -1177,511 +1638,512 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php endforeach; ?>
 
     setupModalRegistrasi('registrasiModal', 'Masuk');
-    
     setupModalRegistrasi('keluarModal', 'Keluar');
-
-    function setupModalRegistrasi(modalId, type) {
-        const modal = document.getElementById(modalId);
-        if (!modal) return;
-
-        const partialCheck = modal.querySelector(`#partialCheck${type}`);
-        const jumlahWrapper = modal.querySelector(`#jumlahWrapper${type}`);
-        const jumlahInput = modal.querySelector(`#jumlahInput${type}`);
-        const sisaWrapper = modal.querySelector(`#sisaWrapper${type}`);
-        const sisaInput = modal.querySelector(`#sisaInput${type}`);
-        const totalJumlahInput = modal.querySelector(`#totalJumlah${type}`);
-        
-        const kembaliCheck = modal.querySelector(`#kembaliCheck${type}`);
-        const estimasiWrapper = modal.querySelector(`#estimasiWrapper${type}`);
-        const estimasiDate = modal.querySelector(`#estimasiDate${type}`);
-
-        if (partialCheck) {
-            partialCheck.addEventListener('change', function() {
-                if (this.checked) {
-                    jumlahWrapper.classList.remove('d-none');
-                    sisaWrapper.classList.remove('d-none');
-                    
-                    const total = Math.max(1, parseInt(totalJumlahInput.value) || 1);
-                    if (jumlahInput) {
-                        jumlahInput.max = total;
-                        jumlahInput.value = total;
-                        sisaInput.value = 0;
-                    }
-                } else {
-                    jumlahWrapper.classList.add('d-none');
-                    sisaWrapper.classList.add('d-none');
-                    if (jumlahInput) jumlahInput.value = 1;
-                    if (sisaInput) sisaInput.value = '';
-                }
-            });
-
-            if (jumlahInput && sisaInput && totalJumlahInput) {
-                jumlahInput.addEventListener('input', calculateSisa);
-                totalJumlahInput.addEventListener('input', calculateSisa);
-                
-                function calculateSisa() {
-                    const total = Math.max(1, parseInt(totalJumlahInput.value) || 1);
-                    const masuk = Math.max(1, parseInt(jumlahInput.value) || 1);
-                    
-                    jumlahInput.max = total;
-                    
-                    if (masuk > total) {
-                        jumlahInput.value = total;
-                        sisaInput.value = 0;
-                    } else {
-                        sisaInput.value = total - masuk;
-                    }
-                }
-                
-                calculateSisa();
-            }
-        }
-
-        if (kembaliCheck) {
-            kembaliCheck.addEventListener('change', function() {
-                if (this.checked) {
-                    estimasiWrapper.classList.remove('d-none');
-                    
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    if (estimasiDate) {
-                        estimasiDate.value = estimasiDate.value || tomorrow.toISOString().split('T')[0];
-                        estimasiDate.min = new Date().toISOString().split('T')[0];
-                    }
-                } else {
-                    estimasiWrapper.classList.add('d-none');
-                }
-            });
-        }
-
-        if (estimasiDate && !estimasiDate.value) {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            estimasiDate.value = tomorrow.toISOString().split('T')[0];
-        }
-    }
-
-    document.querySelectorAll('.jumlah-total').forEach(input => {
-        input.addEventListener('input', function() {
-            const value = parseInt(this.value) || 1;
-            if (value < 1) this.value = 1;
-            
-            const modal = this.closest('.modal-content');
-            if (modal) {
-                const partialInput = modal.querySelector('.jumlah-masuk');
-                const sisaInput = modal.querySelector('[id^="sisaInput"]');
-                if (partialInput && sisaInput) {
-                    const total = Math.max(1, value);
-                    const masuk = Math.max(1, parseInt(partialInput.value) || 1);
-                    
-                    partialInput.max = total;
-                    
-                    if (masuk > total) {
-                        partialInput.value = total;
-                        sisaInput.value = 0;
-                    } else {
-                        sisaInput.value = total - masuk;
-                    }
-                }
-            }
-        });
-    });
-
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const partialCheck = this.querySelector('[id^="partialCheck"]:checked');
-            const jumlahInput = this.querySelector('.jumlah-masuk');
-            const totalJumlahInput = this.querySelector('.jumlah-total');
-            
-            if (partialCheck && jumlahInput) {
-                const total = Math.max(1, parseInt(totalJumlahInput.value) || 1);
-                const partial = Math.max(1, parseInt(jumlahInput.value) || 1);
-                
-                if (partial <= 0) {
-                    e.preventDefault();
-                    alert('Jumlah masuk harus lebih dari 0 untuk partial');
-                    jumlahInput.focus();
-                    return false;
-                }
-                
-                if (partial > total) {
-                    e.preventDefault();
-                    alert('Jumlah masuk tidak boleh melebihi total jumlah');
-                    jumlahInput.focus();
-                    return false;
-                }
-            }
-            
-            return true;
-        });
-    });
 });
-</script>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+// Fungsi setup modal registrasi
+function setupModalRegistrasi(modalId, type) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    initSelect2();
+    const partialCheck = modal.querySelector(`#partialCheck${type}`);
+    const jumlahWrapper = modal.querySelector(`#jumlahWrapper${type}`);
+    const jumlahInput = modal.querySelector(`#jumlahInput${type}`);
+    const sisaWrapper = modal.querySelector(`#sisaWrapper${type}`);
+    const sisaInput = modal.querySelector(`#sisaInput${type}`);
+    const totalJumlahInput = modal.querySelector(`#totalJumlah${type}`);
     
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        modal.addEventListener('shown.bs.modal', function() {
-            initSelect2InModal(this);
-        });
-    });
+    const kembaliCheck = modal.querySelector(`#kembaliCheck${type}`);
+    const estimasiWrapper = modal.querySelector(`#estimasiWrapper${type}`);
+    const estimasiDate = modal.querySelector(`#estimasiDate${type}`);
 
-    function initSelect2() {
-        $('.select2').select2({
-            width: '100%',
-            placeholder: '-- Pilih --',
-            allowClear: true
-        });
-    }
-
-    function initSelect2InModal(modal) {
-        $(modal).find('select.select2').each(function() {
-            if ($(this).hasClass('select2-hidden-accessible')) {
-                $(this).select2('destroy');
+    if (partialCheck) {
+        partialCheck.addEventListener('change', function() {
+            if (this.checked) {
+                jumlahWrapper.classList.remove('d-none');
+                sisaWrapper.classList.remove('d-none');
+                
+                const total = Math.max(1, parseInt(totalJumlahInput.value) || 1);
+                if (jumlahInput) {
+                    jumlahInput.max = total;
+                    jumlahInput.value = total;
+                    sisaInput.value = 0;
+                }
+            } else {
+                jumlahWrapper.classList.add('d-none');
+                sisaWrapper.classList.add('d-none');
+                if (jumlahInput) jumlahInput.value = 1;
+                if (sisaInput) sisaInput.value = '';
             }
         });
 
-        $(modal).find('.select2').select2({
-            width: '100%',
-            placeholder: '-- Pilih --',
-            allowClear: true,
-            dropdownParent: $(modal)
+        if (jumlahInput && sisaInput && totalJumlahInput) {
+            jumlahInput.addEventListener('input', calculateSisa);
+            totalJumlahInput.addEventListener('input', calculateSisa);
+            
+            function calculateSisa() {
+                const total = Math.max(1, parseInt(totalJumlahInput.value) || 1);
+                const masuk = Math.max(1, parseInt(jumlahInput.value) || 1);
+                
+                jumlahInput.max = total;
+                
+                if (masuk > total) {
+                    jumlahInput.value = total;
+                    sisaInput.value = 0;
+                } else {
+                    sisaInput.value = total - masuk;
+                }
+            }
+            
+            calculateSisa();
+        }
+    }
+
+    if (kembaliCheck) {
+        kembaliCheck.addEventListener('change', function() {
+            if (this.checked) {
+                estimasiWrapper.classList.remove('d-none');
+                
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                if (estimasiDate) {
+                    estimasiDate.value = estimasiDate.value || tomorrow.toISOString().split('T')[0];
+                    estimasiDate.min = new Date().toISOString().split('T')[0];
+                }
+            } else {
+                estimasiWrapper.classList.add('d-none');
+            }
         });
     }
-});
-</script>
 
-<script>
-function printLaptop(id) {
-<?php foreach ($laptops as $laptop): ?>
-if (id === <?= $laptop['id'] ?>) {
-
-var data = <?= json_encode($laptop) ?>;
-var w = window.open('', '_blank');
-
-w.document.write(`
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Surat Izin Membawa Laptop</title>
-<style>
-@page {
-    size: A4 landscape;
-    margin: 15mm;
-}
-
-html, body{
-    margin:0;
-    padding:0;
-    font-family: Arial, sans-serif;
-    font-size:12px;
-}
-
-.page{
-    display:flex;
-    width:100%;
-}
-
-.left-side{
-    flex:0 0 55%;
-    padding-right:15px;
-    box-sizing:border-box;
-}
-
-.right-side{
-    flex:0 0 45%;
-    padding:8mm 6mm 6mm 6mm;
-    box-sizing:border-box;
-}
-
-.top-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    margin-bottom:6px;
-}
-
-.logo-left{
-    width:110px;
-    height:auto;
-}
-
-.logo-right{
-    width:95px;
-    height:auto;
-    margin-bottom:4px;
-}
-
-.noreg-box{
-    border:1px solid #000;
-    padding:4px 8px;
-    width:160px;
-    font-size:11px;
-    margin-top:3px;
-}
-
-.center-line{
-    text-align:center;
-    margin-top:3px;
-}
-
-.pt{
-    font-weight:bold;
-    font-size:14px;
-}
-
-.title-main{
-    font-weight:bold;
-    font-size:15px;
-}
-
-.subtitle{
-    font-size:11px;
-}
-
-.dasar-row{
-    display:flex;
-    justify-content:center;
-    gap:30px;
-    margin-top:8px;
-    font-size:11px;
-}
-
-.form-row{
-    display:flex;
-    align-items:center;
-    margin-top:5px;
-    font-size:11px;
-}
-
-.label{
-    width:140px;
-}
-
-.colon{
-    width:15px;
-    text-align:center;
-}
-
-.line-fill{
-    flex:1;
-    border-bottom:1px solid #000;
-    padding-left:5px;
-    min-height:16px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    table-layout:fixed;
-}
-
-table, th, td{
-    border:1px solid #000;
-}
-
-th{
-    font-size:9px;
-    padding:2px;
-    text-align:center;
-}
-
-td{
-    font-size:8px;
-    padding:1px;
-    text-align:center;
-    height:16px;
-}
-
-.signature-section{
-    display:flex;
-    justify-content:space-between;
-    margin-top:25px;
-    font-size:11px;
-}
-
-.sign-box{
-    width:45%;
-    text-align:center;
-}
-
-.sign-line{
-    width:140px;
-    margin:35px auto 0 auto;
-    border-top:1px solid #000;
-}
-
-@media print{
-    .print-buttons{
-        display:none;
+    if (estimasiDate && !estimasiDate.value) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        estimasiDate.value = tomorrow.toISOString().split('T')[0];
     }
 }
 
-.print-buttons{
-    position:fixed;
-    bottom:15px;
-    right:15px;
+// Event untuk input jumlah total
+document.querySelectorAll('.jumlah-total').forEach(input => {
+    input.addEventListener('input', function() {
+        const value = parseInt(this.value) || 1;
+        if (value < 1) this.value = 1;
+        
+        const modal = this.closest('.modal-content');
+        if (modal) {
+            const partialInput = modal.querySelector('.jumlah-masuk');
+            const sisaInput = modal.querySelector('[id^="sisaInput"]');
+            if (partialInput && sisaInput) {
+                const total = Math.max(1, value);
+                const masuk = Math.max(1, parseInt(partialInput.value) || 1);
+                
+                partialInput.max = total;
+                
+                if (masuk > total) {
+                    partialInput.value = total;
+                    sisaInput.value = 0;
+                } else {
+                    sisaInput.value = total - masuk;
+                }
+            }
+        }
+    });
+});
+
+// Validasi form
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const partialCheck = this.querySelector('[id^="partialCheck"]:checked');
+        const jumlahInput = this.querySelector('.jumlah-masuk');
+        const totalJumlahInput = this.querySelector('.jumlah-total');
+        
+        if (partialCheck && jumlahInput) {
+            const total = Math.max(1, parseInt(totalJumlahInput.value) || 1);
+            const partial = Math.max(1, parseInt(jumlahInput.value) || 1);
+            
+            if (partial <= 0) {
+                e.preventDefault();
+                alert('Jumlah masuk harus lebih dari 0 untuk partial');
+                jumlahInput.focus();
+                return false;
+            }
+            
+            if (partial > total) {
+                e.preventDefault();
+                alert('Jumlah masuk tidak boleh melebihi total jumlah');
+                jumlahInput.focus();
+                return false;
+            }
+        }
+        
+        return true;
+    });
+});
+
+// ============================================
+// FUNGSI QR CODE
+// ============================================
+
+let currentQRData = '';
+
+function showQRCode(data) {
+    currentQRData = data;
+    const qrContainer = document.getElementById('qrCodeContainer');
+    const qrText = document.getElementById('qrCodeText');
+    
+    qrContainer.innerHTML = '';
+    qrText.textContent = `Nomor Registrasi: ${data}`;
+    
+    QRCode.toCanvas(document.createElement('canvas'), data, {
+        width: 200,
+        margin: 2,
+        color: {
+            dark: '#000000',
+            light: '#ffffff'
+        }
+    }, function(err, canvas) {
+        if (err) {
+            console.error(err);
+            qrContainer.innerHTML = '<p class="text-danger">Gagal generate QR Code</p>';
+            return;
+        }
+        canvas.style.width = '200px';
+        canvas.style.height = '200px';
+        qrContainer.appendChild(canvas);
+    });
 }
 
-.print-buttons button{
-    padding:6px 12px;
-    font-size:12px;
-    cursor:pointer;
+function downloadQRCode() {
+    if (!currentQRData) return;
+    
+    const canvas = document.querySelector('#qrCodeContainer canvas');
+    if (!canvas) return;
+    
+    const link = document.createElement('a');
+    link.download = `QR-${currentQRData}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
 }
-</style>
-</head>
-<body>
+// ============================================
+// FUNGSI PERPANJANG LAPTOP (DIPERBAIKI)
+// ============================================
 
-<div class="page">
+// ============================================
+// FUNGSI PERPANJANG LAPTOP
+// ============================================
 
-    <div class="left-side">
-<div class="top-header">
-
-    <div class="left-logo">
-        <img src="/assets/img/logodi.png" class="logo-left">
-    </div>
-
-    <div class="right-area">
-        <img src="/assets/img/logop.png" class="logo-right">
-
-        <div class="noreg-box">
-            No Reg : __________
-        </div>
-    </div>
-
-</div>
-
-        <div class="center-line pt">
-            PT PINDAD
-        </div>
-
-        <div class="center-line">
-            DIVISI PENGAMANAN
-        </div>
-
-        <div class="center-line title-main">
-            SURAT IZIN MEMBAWA LAPTOP
-        </div>
-
-        <div class="center-line subtitle">
-            PERMISSION LETTER TO BRING LAPTOP
-        </div>
-
-        <div class="dasar-row">
-            <div><strong>Dasar :</strong> ____________________________</div>
-            <div><strong>Tgl :</strong> ____________________________</div>
-        </div>
-
-        <div class="form-row">
-    <span class="label">Nama</span>
-    <span class="colon">:</span>
-    <span class="line-fill">${data.nama_pengguna || ''}</span>
-</div>
-
-<div class="form-row">
-    <span class="label">Nomor ID</span>
-    <span class="colon">:</span>
-    <span class="line-fill">${data.nomor_id_card || ''}</span>
-</div>
-
-<div class="form-row">
-    <span class="label">Instansi</span>
-    <span class="colon">:</span>
-    <span class="line-fill">${data.instansi_divisi || ''}</span>
-</div>
-
-<div class="form-row">
-    <span class="label">Merek</span>
-    <span class="colon">:</span>
-    <span class="line-fill">${data.merek || ''}</span>
-</div>
-
-<div class="form-row">
-    <span class="label">Tipe</span>
-    <span class="colon">:</span>
-    <span class="line-fill">${data.tipe_laptop || ''}</span>
-</div>
-
-<div class="form-row">
-    <span class="label">No Seri</span>
-    <span class="colon">:</span>
-    <span class="line-fill">${data.nomor_seri || ''}</span>
-</div>
-
-<div class="form-row">
-    <span class="label">Berlaku Sampai</span>
-    <span class="colon">:</span>
-    <span class="line-fill">${data.berlaku_sampai || ''}</span>
-</div>
-
-        <div style="margin-top:20px;">
-            Demikian surat izin ini dibuat untuk dipergunakan sebagaimana mestinya.
-        </div>
-<div class="signature-section">
-
-    <div class="sign-box">
-        Mengetahui<br>
-        <strong>Petugas Div PAM</strong><br>
-        Seccurity Officer
-        <div class="sign-line"></div>
-    </div>
-
-    <div class="sign-box">
-        Bandung,<br>
-        <strong>Yang Membawa</strong><br>
-        The Beorer
-        <div class="sign-line"></div>
-    </div>
-
-</div>
-    </div>
-
-    <div class="right-side">
-
-    <table>
-    <tr>
-        <th colspan="2">MASUK</th>
-        <th colspan="2">KELUAR</th>
-    </tr>
-    <tr>
-        <th>Tanggal</th>
-        <th>Paraf</th>
-        <th>Tanggal</th>
-        <th>Paraf</th>
-    </tr>
-
-${'<tr><td></td><td></td><td></td><td></td></tr>'.repeat(28)}
-</table>
-
-    </div>
-
-</div>
-<div class="print-buttons">
-    <button onclick="window.print()">Print</button>
-    <button onclick="window.close()">Kembali</button>
-</div>
-</body>
-</html>
-`);
-
-w.document.close();
-return;
+function perpanjangLaptop(id) {
+    // Cari data laptop berdasarkan ID
+    <?php foreach ($laptops as $laptop): ?>
+    if (id === <?= $laptop['id'] ?>) {
+        // Isi data ke modal
+        document.getElementById('perpanjang_laptop_id').value = <?= $laptop['id'] ?>;
+        document.getElementById('perpanjang_nama').value = '<?= esc($laptop['nama_pengguna'] ?? '') ?>';
+        document.getElementById('perpanjang_seri').value = '<?= esc($laptop['nomor_seri'] ?? '') ?>';
+        document.getElementById('perpanjang_no_registrasi').value = '<?= esc($laptop['no_registrasi'] ?? '') ?>';
+        
+        // Registrasi ke (sudah dihitung di controller)
+        document.getElementById('perpanjang_registrasi_ke').value = '<?= ($laptop['registrasi_selanjutnya'] ?? 1) ?>';
+        document.getElementById('info_registrasi_ke').textContent = '<?= ($laptop['registrasi_selanjutnya'] ?? 1) ?>';
+        
+        // Tanggal berlaku saat ini
+        <?php 
+        $tanggalLama = date('d-m-Y', strtotime($laptop['berlaku_sampai']));
+        $minTanggal = date('Y-m-d', strtotime($laptop['berlaku_sampai'] . ' +1 day'));
+        ?>
+        document.getElementById('perpanjang_berlaku_sampai_lama').value = '<?= $tanggalLama ?>';
+        
+        // Set minimal tanggal baru (H+1 dari tanggal lama)
+        document.getElementById('perpanjang_berlaku_sampai_baru').min = '<?= $minTanggal ?>';
+        document.getElementById('perpanjang_berlaku_sampai_baru').value = '';
+        
+        // Kosongkan keterangan
+        document.getElementById('perpanjang_keterangan').value = '';
+        
+        // Buka modal
+        const modal = new bootstrap.Modal(document.getElementById('perpanjangLaptopModal'));
+        modal.show();
+        return;
+    }
+    <?php endforeach; ?>
+    
+    // Jika tidak ditemukan
+    alert('Data laptop tidak ditemukan');
 }
-<?php endforeach; ?>
+// ============================================
+// FUNGSI PRINT LAPTOP
+// ============================================
 
-alert("Data tidak ditemukan");
+function printLaptop(id) {
+    <?php foreach ($laptops as $laptop): ?>
+    if (id === <?= $laptop['id'] ?>) {
+        var data = <?= json_encode($laptop) ?>;
+        var w = window.open('', '_blank');
+
+        w.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="UTF-8">
+        <title>Surat Izin Membawa Laptop</title>
+        <style>
+        @page {
+            size: A4 landscape;
+            margin: 15mm;
+        }
+        html, body{
+            margin:0;
+            padding:0;
+            font-family: Arial, sans-serif;
+            font-size:12px;
+        }
+        .page{
+            display:flex;
+            width:100%;
+        }
+        .left-side{
+            flex:0 0 55%;
+            padding-right:15px;
+            box-sizing:border-box;
+        }
+        .right-side{
+            flex:0 0 45%;
+            padding:8mm 6mm 6mm 6mm;
+            box-sizing:border-box;
+        }
+        .top-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            margin-bottom:6px;
+        }
+        .logo-left{
+            width:110px;
+            height:auto;
+        }
+        .logo-right{
+            width:95px;
+            height:auto;
+            margin-bottom:4px;
+        }
+        .noreg-box{
+            border:1px solid #000;
+            padding:4px 8px;
+            width:160px;
+            font-size:11px;
+            margin-top:3px;
+        }
+        .center-line{
+            text-align:center;
+            margin-top:3px;
+        }
+        .pt{
+            font-weight:bold;
+            font-size:14px;
+        }
+        .title-main{
+            font-weight:bold;
+            font-size:15px;
+        }
+        .subtitle{
+            font-size:11px;
+        }
+        .dasar-row{
+            display:flex;
+            justify-content:center;
+            gap:30px;
+            margin-top:8px;
+            font-size:11px;
+        }
+        .form-row{
+            display:flex;
+            align-items:center;
+            margin-top:5px;
+            font-size:11px;
+        }
+        .label{
+            width:140px;
+        }
+        .colon{
+            width:15px;
+            text-align:center;
+        }
+        .line-fill{
+            flex:1;
+            border-bottom:1px solid #000;
+            padding-left:5px;
+            min-height:16px;
+        }
+        table{
+            width:100%;
+            border-collapse:collapse;
+            table-layout:fixed;
+        }
+        table, th, td{
+            border:1px solid #000;
+        }
+        th{
+            font-size:9px;
+            padding:2px;
+            text-align:center;
+        }
+        td{
+            font-size:8px;
+            padding:1px;
+            text-align:center;
+            height:16px;
+        }
+        .signature-section{
+            display:flex;
+            justify-content:space-between;
+            margin-top:25px;
+            font-size:11px;
+        }
+        .sign-box{
+            width:45%;
+            text-align:center;
+        }
+        .sign-line{
+            width:140px;
+            margin:35px auto 0 auto;
+            border-top:1px solid #000;
+        }
+        @media print{
+            .print-buttons{
+                display:none;
+            }
+        }
+        .print-buttons{
+            position:fixed;
+            bottom:15px;
+            right:15px;
+        }
+        .print-buttons button{
+            padding:6px 12px;
+            font-size:12px;
+            cursor:pointer;
+        }
+        </style>
+        </head>
+        <body>
+        <div class="page">
+            <div class="left-side">
+                <div class="top-header">
+                    <div class="left-logo">
+                        <img src="/assets/img/logodi.png" class="logo-left">
+                    </div>
+                    <div class="right-area">
+                        <img src="/assets/img/logop.png" class="logo-right">
+                        <div class="noreg-box">
+                            No Reg : __________
+                        </div>
+                    </div>
+                </div>
+                <div class="center-line pt">
+                    PT PINDAD
+                </div>
+                <div class="center-line">
+                    DIVISI PENGAMANAN
+                </div>
+                <div class="center-line title-main">
+                    SURAT IZIN MEMBAWA LAPTOP
+                </div>
+                <div class="center-line subtitle">
+                    PERMISSION LETTER TO BRING LAPTOP
+                </div>
+                <div class="dasar-row">
+                    <div><strong>Dasar :</strong> ____________________________</div>
+                    <div><strong>Tgl :</strong> ____________________________</div>
+                </div>
+                <div class="form-row">
+                    <span class="label">Nama</span>
+                    <span class="colon">:</span>
+                    <span class="line-fill">${data.nama_pengguna || ''}</span>
+                </div>
+                <div class="form-row">
+                    <span class="label">Nomor ID</span>
+                    <span class="colon">:</span>
+                    <span class="line-fill">${data.nomor_id_card || ''}</span>
+                </div>
+                <div class="form-row">
+                    <span class="label">Instansi</span>
+                    <span class="colon">:</span>
+                    <span class="line-fill">${data.instansi_divisi || ''}</span>
+                </div>
+                <div class="form-row">
+                    <span class="label">Merek</span>
+                    <span class="colon">:</span>
+                    <span class="line-fill">${data.merek || ''}</span>
+                </div>
+                <div class="form-row">
+                    <span class="label">Tipe</span>
+                    <span class="colon">:</span>
+                    <span class="line-fill">${data.tipe_laptop || ''}</span>
+                </div>
+                <div class="form-row">
+                    <span class="label">No Seri</span>
+                    <span class="colon">:</span>
+                    <span class="line-fill">${data.nomor_seri || ''}</span>
+                </div>
+                <div class="form-row">
+                    <span class="label">Berlaku Sampai</span>
+                    <span class="colon">:</span>
+                    <span class="line-fill">${data.berlaku_sampai || ''}</span>
+                </div>
+                <div style="margin-top:20px;">
+                    Demikian surat izin ini dibuat untuk dipergunakan sebagaimana mestinya.
+                </div>
+                <div class="signature-section">
+                    <div class="sign-box">
+                        Mengetahui<br>
+                        <strong>Petugas Div PAM</strong><br>
+                        Seccurity Officer
+                        <div class="sign-line"></div>
+                    </div>
+                    <div class="sign-box">
+                        Bandung,<br>
+                        <strong>Yang Membawa</strong><br>
+                        The Beorer
+                        <div class="sign-line"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="right-side">
+                <table>
+                    <tr>
+                        <th colspan="2">MASUK</th>
+                        <th colspan="2">KELUAR</th>
+                    </tr>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Paraf</th>
+                        <th>Tanggal</th>
+                        <th>Paraf</th>
+                    </tr>
+                    ${'<tr><td></td><td></td><td></td><td></td></tr>'.repeat(28)}
+                </table>
+            </div>
+        </div>
+        <div class="print-buttons">
+            <button onclick="window.print()">Print</button>
+            <button onclick="window.close()">Kembali</button>
+        </div>
+        </body>
+        </html>
+        `);
+
+        w.document.close();
+        return;
+    }
+    <?php endforeach; ?>
+    alert("Data tidak ditemukan");
 }
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
+
+// ============================================
+// PERBAIKAN UNTUK SEARCH LAPTOP (AJAX)
+// ============================================
+
+if (document.getElementById('searchLaptopForm')) {
     const searchForm = document.getElementById('searchLaptopForm');
     const keywordInput = document.getElementById('searchKeyword');
     const statusSelect = document.getElementById('searchStatus');
@@ -1721,7 +2183,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(html => {
                 tableContainer.innerHTML = html;
-                initModals();
+                
+                setTimeout(() => {
+                    initModals();
+                    reinitModalTriggers();
+                    fixCloseButtons();
+                    initSelect2();
+                }, 100);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -1749,28 +2217,28 @@ document.addEventListener('DOMContentLoaded', function() {
             searchForm.dispatchEvent(new Event('submit'));
         });
     }
+}
+
+window.addEventListener('error', function() {
+    forceCloseAllModals();
+});
+
+setInterval(function() {
+    const openModals = document.querySelectorAll('.modal.show');
+    const backdrops = document.querySelectorAll('.modal-backdrop');
     
-    function initModals() {
-        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
-            button.replaceWith(button.cloneNode(true));
-        });
-        
-        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = this.getAttribute('data-bs-target');
-                if (target) {
-                    const modalElement = document.querySelector(target);
-                    if (modalElement) {
-                        const modal = new bootstrap.Modal(modalElement);
-                        modal.show();
-                    }
-                }
-            });
-        });
+    if (openModals.length === 0 && backdrops.length > 0) {
+        backdrops.forEach(backdrop => backdrop.remove());
+        document.body.classList.remove('modal-open');
     }
     
-    initModals();
-});
+    if (openModals.length > 0 && backdrops.length === 0) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+        document.body.classList.add('modal-open');
+    }
+}, 500);
 </script>
+
 <?= $this->endSection() ?>
